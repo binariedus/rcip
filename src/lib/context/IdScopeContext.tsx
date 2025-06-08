@@ -1,17 +1,18 @@
-import React, { createContext, useContext } from 'react'
-
-import type { ReactNode } from 'react'
+import { createContext, useContext, useId, ReactNode, FC } from 'react'
 
 const ScopeContext = createContext<string>('')
 
 interface IdScopeProps {
   id: string
+  instanceId?: string
   children: ReactNode
 }
 
-export const IdScope: React.FC<IdScopeProps> = ({ id, children }) => {
+export const IdScope: FC<IdScopeProps> = ({ id, instanceId, children }) => {
   const parent = useContext(ScopeContext)
-  const scope = parent ? `${parent}.${id}` : id
+  const auto = useId().replace(/:/g, '_')
+  const key = instanceId ?? auto
+  const scope = parent ? `${parent}.${id}#${key}` : `${id}#${key}`
   return <ScopeContext.Provider value={scope}>{children}</ScopeContext.Provider>
 }
 

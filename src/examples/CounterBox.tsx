@@ -1,23 +1,30 @@
 import { useState } from 'react'
-import { useActions } from '@lib/hooks/useActions'
-import type {CounterMap} from "@lib/core/types";
+import { useActionRegistration } from '@lib/hooks/useActionRegistration'
+import { useIdScope } from '@lib/hooks/useIdScope'
+import type { ActionDefinition } from '@lib/core/types'
+
+type CounterMap = {
+  CounterBox: {
+    incrementBy: { P: number; R: void }
+  }
+}
 
 export function CounterBox() {
   const [count, setCount] = useState(0)
 
-  useActions<CounterMap, 'CounterBox'>('CounterBox', {
-    incrementBy: {
-      type: 'logic',
-      label: 'Increment',
-      handler: n => setCount(c => c + n)
-    }
-  })
+  const scopedId = useIdScope('CounterBox')
 
-  return (
-    <>
-      <div>Count: {count}</div>
-    </>
+  const definition: ActionDefinition<number, void> = {
+    type: 'logic',
+    label: 'Increment',
+    handler: n => setCount(c => c + n)
+  }
+
+  useActionRegistration<CounterMap['CounterBox']['incrementBy']['P'], CounterMap['CounterBox']['incrementBy']['R']>(
+    scopedId,
+    'incrementBy',
+    definition
   )
 
-  // return <div>Count: {count}</div>
+  return <div>Count: {count}</div>
 }

@@ -1,3 +1,8 @@
+export interface RegistryMap {
+  [nodeId: string]: {
+    [actionId: string]: { P: any; R: any }
+  }
+}
 
 export interface InvokeContext<M extends RegistryMap = RegistryMap> {
   nodeId: keyof M & string
@@ -14,35 +19,42 @@ export interface ActionDefinition<P, R = void> {
   meta?: Record<string, unknown>
 }
 
-export interface RegistryMap {
-  [nodeId: string]: {
-    [actionId: string]: { P: any; R: any }
-  }
-}
-
 export type Middleware<M extends RegistryMap = RegistryMap> = (
-  context: InvokeContext<M>,
+  ctx: InvokeContext<M>,
   next: () => Promise<any>
 ) => Promise<any>
 
-
 export interface UIActionInstance<M extends RegistryMap = RegistryMap> {
-  registerAction: <N extends keyof M & string, A extends keyof M[N] & string>(
+  registerAction: <
+    N extends keyof M & string,
+    A extends keyof M[N] & string
+  >(
     nodeId: N,
     actionId: A,
     definition: ActionDefinition<M[N][A]['P'], M[N][A]['R']>
   ) => void
-  invoke: <N extends keyof M & string, A extends keyof M[N] & string>(
+
+  unregisterAction: <
+    N extends keyof M & string,
+    A extends keyof M[N] & string
+  >(nodeId: N, actionId: A) => void
+
+  invoke: <
+    N extends keyof M & string,
+    A extends keyof M[N] & string
+  >(
     nodeId: N,
     actionId: A,
     payload: M[N][A]['P']
   ) => Promise<M[N][A]['R']>
-  registerMiddleware: (middleware: Middleware<M>) => void
-}
 
-export type CounterMap = {
-  CounterBox: {
-    incrementBy: { P: number; R: void }
-  }
-}
+  registerMiddleware: (mw: Middleware<M>) => void
 
+  listNodes: () => Array<keyof M & string>
+
+  listActions: <
+    N extends keyof M & string
+  >(nodeId: N) => (keyof M[N] & string)[] | undefined
+
+  describe: () => Partial<M>
+}
