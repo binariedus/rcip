@@ -1,60 +1,36 @@
 export interface RegistryMap {
   [nodeId: string]: {
-    [actionId: string]: { P: any; R: any }
+    _meta: { label: string; description: string }
+    [actionId: string]: { P: any; R: any } | any
   }
 }
 
-export interface InvokeContext<M extends RegistryMap = RegistryMap> {
-  nodeId: keyof M & string
-  actionId: keyof M[keyof M] & string
-  payload: M[keyof M][keyof M[keyof M]]['P']
-  result?: M[keyof M][keyof M[keyof M]]['R']
+export interface InvokeContext {
+  nodeId: string
+  actionId: string
+  payload: unknown
+  result?: unknown
 }
 
 export interface ActionDefinition<P, R = void> {
   type: 'logic' | 'dom'
   label: string
+  description: string
   handler: (payload: P) => R | Promise<R>
   refKey?: string
   meta?: Record<string, unknown>
 }
 
-export type Middleware<M extends RegistryMap = RegistryMap> = (
-  ctx: InvokeContext<M>,
+export type Middleware = (
+  ctx: InvokeContext,
   next: () => Promise<any>
 ) => Promise<any>
 
-export interface UIActionInstance<M extends RegistryMap = RegistryMap> {
-  registerAction: <
-    N extends keyof M & string,
-    A extends keyof M[N] & string
-  >(
-    nodeId: N,
-    actionId: A,
-    definition: ActionDefinition<M[N][A]['P'], M[N][A]['R']>
-  ) => void
-
-  unregisterAction: <
-    N extends keyof M & string,
-    A extends keyof M[N] & string
-  >(nodeId: N, actionId: A) => void
-
-  invoke: <
-    N extends keyof M & string,
-    A extends keyof M[N] & string
-  >(
-    nodeId: N,
-    actionId: A,
-    payload: M[N][A]['P']
-  ) => Promise<M[N][A]['R']>
-
-  registerMiddleware: (mw: Middleware<M>) => void
-
-  listNodes: () => Array<keyof M & string>
-
-  listActions: <
-    N extends keyof M & string
-  >(nodeId: N) => (keyof M[N] & string)[] | undefined
-
-  describe: () => Partial<M>
+export interface UIActionInstance {
+  registerNode: (nodeId: string, label: string, description: string) => void
+  registerAction: (nodeId: string, actionId: string, def: ActionDefinition<any, any>) => void
+  unregisterAction: (nodeId: string, actionId: string) => void
+  invoke: <P, R>(nodeId: string, actionId: string, payload: P) => Promise<R>
+  registerMiddleware: (mw: Middleware) => void
+  describe: () => RegistryMap
 }

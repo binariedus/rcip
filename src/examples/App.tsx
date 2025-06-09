@@ -1,12 +1,12 @@
 import { UIActionProvider } from '@lib/context/UIActionProvider'
-import { MainInput } from './MainInput'
-import { DevTrigger } from './DevTrigger'
+import { ArticleEditor } from './ArticleEditor'
+import { AssistantPanel } from './AssistantPanel'
 
 export function App() {
   return (
     <UIActionProvider>
-      <MainInput />
-      <DevTrigger />
+      <ArticleEditor />
+      <AssistantPanel />
     </UIActionProvider>
   )
 }

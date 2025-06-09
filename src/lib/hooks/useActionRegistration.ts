@@ -7,14 +7,11 @@ export function useActionRegistration<P, R>(
   nodeId: string,
   actionId: string,
   definition: ActionDefinition<P, R>
-): void {
+) {
   const scoped = useIdScope(nodeId)
   const ui = useUIAction()
-
   useEffect(() => {
-    ui.registerAction(scoped as any, actionId as any, definition)
-    return () => {
-      ui.unregisterAction(scoped as any, actionId as any)
-    }
+    ui.registerAction(scoped, actionId, definition)
+    return () => ui.unregisterAction(scoped, actionId)
   }, [scoped, actionId, definition, ui])
 }

@@ -1,9 +1,7 @@
-export type AppMap = {
-  MainInput: {
-    updateValue: { P: string; R: void }
-    getInfo: { P: void; R: { value: string } }
+export type DemoMap = {
+  'Editor': {
+    updateContent: { P: string; R: void }
+    getInfo: { P: void; R: { content: string; length: number } }
   }
-  DevTrigger: {
-    syncValue: { P: string; R: void }
-  }
+  'Assistant': {}
 }
