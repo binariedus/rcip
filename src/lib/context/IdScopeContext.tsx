@@ -1,4 +1,5 @@
-import { createContext, useContext, useId, ReactNode, FC } from 'react'
+import { createContext, useContext, useId } from 'react'
+import type { ReactNode } from 'react'
 import { useUIAction } from './UIActionProvider'
 
 const ScopeContext = createContext<string>('')
@@ -11,7 +12,13 @@ interface Props {
   children: ReactNode
 }
 
-export const IdScope: FC<Props> = ({ id, label, description, instanceId, children }) => {
+export function IdScope({
+                          id,
+                          label,
+                          description,
+                          instanceId,
+                          children
+                        }: Props) {
   const parent = useContext(ScopeContext)
   const auto = useId().replace(/:/g, '_')
   const key = instanceId ?? auto

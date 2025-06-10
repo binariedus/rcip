@@ -1,16 +1,26 @@
-import type {ActionDefinition, Middleware, UIActionInstance, RegistryMap, InvokeContext} from './types'
+import type {ActionDefinition, ExecutionContext, Middleware, UIActionInstance} from './types'
 
 export function createUIAction(): UIActionInstance {
-  const registry: RegistryMap = {}
-  const middleware: Middleware[] = []
+  const registry: Record<
+    string,
+    { _meta?: { label: string; description: string } } &
+    Record<string, ActionDefinition<any, any>>
+  > = {}
+
+  const middlewareList: Middleware[] = []
 
   function registerNode(nodeId: string, label: string, description: string) {
-    if (!registry[nodeId]) registry[nodeId] = { _meta: { label, description } }
+    if (!registry[nodeId]) registry[nodeId] = {}
+    registry[nodeId]._meta = { label, description }
   }
 
-  function registerAction(nodeId: string, actionId: string, def: ActionDefinition<any, any>) {
+  function registerAction<P, R>(
+    nodeId: string,
+    actionId: string,
+    def: ActionDefinition<P, R>
+  ) {
     registerNode(nodeId, def.label, def.description)
-    registry[nodeId][actionId] = { ...def }
+    registry[nodeId][actionId] = def as ActionDefinition<any, any>
   }
 
   function unregisterAction(nodeId: string, actionId: string) {
@@ -20,30 +30,47 @@ export function createUIAction(): UIActionInstance {
     if (Object.keys(node).length === 1) delete registry[nodeId]
   }
 
-  async function invoke<P, R>(nodeId: string, actionId: string, payload: P): Promise<R> {
+  async function invoke<P, R>(
+    nodeId: string,
+    actionId: string,
+    payload: P
+  ): Promise<R> {
+
+    console.log({
+      nodeId,
+      registry
+    })
+
     const node = registry[nodeId]
     if (!node) throw new Error(`Node ${nodeId} not found`)
-    const def = node[actionId] as ActionDefinition<P, R>
+    const def = node[actionId] as ActionDefinition<P, R> | undefined
     if (!def) throw new Error(`Action ${actionId} not found on ${nodeId}`)
-    const ctx = { nodeId, actionId, payload } as InvokeContext
     let idx = -1
-    const dispatch = async (): Promise<any> => {
+    const ctx: ExecutionContext<P, R> = { nodeId, actionId, payload }
+    const run = async (): Promise<any> => {
       idx++
-      if (idx < middleware.length) return middleware[idx](ctx, dispatch)
+      if (idx < middlewareList.length) return middlewareList[idx](ctx, run)
       const res = await def.handler(payload)
       ctx.result = res
       return res
     }
-    return dispatch() as Promise<R>
+    return run() as Promise<R>
   }
 
   function registerMiddleware(mw: Middleware) {
-    middleware.push(mw)
+    middlewareList.push(mw)
   }
 
   function describe() {
     return registry
   }
 
-  return { registerNode, registerAction, unregisterAction, invoke, registerMiddleware, describe }
+  return {
+    registerNode,
+    registerAction,
+    unregisterAction,
+    invoke,
+    registerMiddleware,
+    describe
+  }
 }

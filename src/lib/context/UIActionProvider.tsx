@@ -1,32 +1,29 @@
 import { createContext, useContext, useMemo } from 'react'
-
 import type { ReactNode } from 'react'
-
 import { createUIAction } from '../core/engine'
-import type { Middleware, UIActionInstance, RegistryMap } from '../core/types'
+import type { Middleware, UIActionInstance } from '../core/types'
 
-const UIActionContext = createContext<UIActionInstance<any> | null>(null)
+const UIActionContext = createContext<UIActionInstance | null>(null)
 
-interface UIActionProviderProps<M extends RegistryMap> {
+interface Props {
   children: ReactNode
-  middleware?: Middleware<M>[]
+  middleware?: Middleware[]
 }
 
-export function UIActionProvider<M extends RegistryMap>({
-                                                          children,
-                                                          middleware = []
-                                                        }: UIActionProviderProps<M>) {
+export function UIActionProvider({ children, middleware = [] }: Props) {
   const instance = useMemo(() => {
-    const ui = createUIAction<M>()
-    middleware.forEach(mw => ui.registerMiddleware(mw))
+    const ui = createUIAction()
+    middleware.forEach(ui.registerMiddleware)
     return ui
   }, [middleware])
 
-  return <UIActionContext.Provider value={instance}>{children}</UIActionContext.Provider>
+  return (
+    <UIActionContext.Provider value={instance}>{children}</UIActionContext.Provider>
+  )
 }
 
-export function useUIAction<M extends RegistryMap = RegistryMap>(): UIActionInstance<M> {
-  const context = useContext(UIActionContext) as UIActionInstance<M> | null
-  if (!context) throw new Error('useUIAction must be inside UIActionProvider')
-  return context
+export function useUIAction(): UIActionInstance {
+  const ui = useContext(UIActionContext)
+  if (!ui) throw new Error('useUIAction must be inside UIActionProvider')
+  return ui
 }
