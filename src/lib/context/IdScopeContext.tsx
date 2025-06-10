@@ -1,18 +1,30 @@
-import React, { createContext, useContext } from 'react'
-
+import { createContext, useContext, useId } from 'react'
 import type { ReactNode } from 'react'
+import { useUIAction } from './UIActionProvider'
 
 const ScopeContext = createContext<string>('')
 
-interface IdScopeProps {
+interface Props {
   id: string
+  label: string
+  description: string
+  instanceId?: string
   children: ReactNode
 }
 
-export const IdScope: React.FC<IdScopeProps> = ({ id, children }) => {
+export function IdScope({
+                          id,
+                          label,
+                          description,
+                          instanceId,
+                          children
+                        }: Props) {
   const parent = useContext(ScopeContext)
-  const scope = parent ? `${parent}.${id}` : id
-  return <ScopeContext.Provider value={scope}>{children}</ScopeContext.Provider>
+  const auto = useId().replace(/:/g, '_')
+  const key = instanceId ?? auto
+  const full = parent ? `${parent}.${id}#${key}` : `${id}#${key}`
+  useUIAction().registerNode(full, label, description)
+  return <ScopeContext.Provider value={full}>{children}</ScopeContext.Provider>
 }
 
 export function useScope(): string {

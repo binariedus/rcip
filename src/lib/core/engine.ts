@@ -1,42 +1,76 @@
-import type { ActionDefinition, RegistryMap, UIActionInstance } from './types'
+import type {ActionDefinition, ExecutionContext, Middleware, UIActionInstance} from './types'
 
-export function createUIAction<M extends RegistryMap = RegistryMap>(): UIActionInstance<M> {
-  const registry: Partial<M> = {}
-  const middlewareList: any[] = []
+export function createUIAction(): UIActionInstance {
+  const registry: Record<
+    string,
+    { _meta?: { label: string; description: string } } &
+    Record<string, ActionDefinition<any, any>>
+  > = {}
 
-  function registerAction<N extends keyof M & string, A extends keyof M[N] & string>(
-    nodeId: N,
-    actionId: A,
-    definition: ActionDefinition<M[N][A]['P'], M[N][A]['R']>
-  ): void {
-    if (!registry[nodeId]) registry[nodeId] = {} as any
-    ;(registry[nodeId] as any)[actionId] = definition
+  const middlewareList: Middleware[] = []
+
+  function registerNode(nodeId: string, label: string, description: string) {
+    if (!registry[nodeId]) registry[nodeId] = {}
+    registry[nodeId]._meta = { label, description }
   }
 
-  async function invoke<N extends keyof M & string, A extends keyof M[N] & string>(
-    nodeId: N,
-    actionId: A,
-    payload: M[N][A]['P']
-  ): Promise<M[N][A]['R']> {
-    const definition = (registry[nodeId] as any)?.[actionId] as ActionDefinition<
-      M[N][A]['P'],
-      M[N][A]['R']
-    >
-    if (!definition) throw new Error(`Action ${nodeId}.${actionId} not found`)
+  function registerAction<P, R>(
+    nodeId: string,
+    actionId: string,
+    def: ActionDefinition<P, R>
+  ) {
+    registerNode(nodeId, def.label, def.description)
+    registry[nodeId][actionId] = def as ActionDefinition<any, any>
+  }
 
-    const context = { nodeId, actionId, payload }
+  function unregisterAction(nodeId: string, actionId: string) {
+    const node = registry[nodeId]
+    if (!node) return
+    delete node[actionId]
+    if (Object.keys(node).length === 1) delete registry[nodeId]
+  }
+
+  async function invoke<P, R>(
+    nodeId: string,
+    actionId: string,
+    payload: P
+  ): Promise<R> {
+
+    console.log({
+      nodeId,
+      registry
+    })
+
+    const node = registry[nodeId]
+    if (!node) throw new Error(`Node ${nodeId} not found`)
+    const def = node[actionId] as ActionDefinition<P, R> | undefined
+    if (!def) throw new Error(`Action ${actionId} not found on ${nodeId}`)
     let idx = -1
-    const next = async (): Promise<unknown> => {
+    const ctx: ExecutionContext<P, R> = { nodeId, actionId, payload }
+    const run = async (): Promise<any> => {
       idx++
-      if (idx < middlewareList.length) return middlewareList[idx](context, next)
-      return definition.handler(payload)
+      if (idx < middlewareList.length) return middlewareList[idx](ctx, run)
+      const res = await def.handler(payload)
+      ctx.result = res
+      return res
     }
-    return next() as Promise<M[N][A]['R']>
+    return run() as Promise<R>
   }
 
-  function registerMiddleware(mw: any): void {
+  function registerMiddleware(mw: Middleware) {
     middlewareList.push(mw)
   }
 
-  return { registerAction, invoke, registerMiddleware }
+  function describe() {
+    return registry
+  }
+
+  return {
+    registerNode,
+    registerAction,
+    unregisterAction,
+    invoke,
+    registerMiddleware,
+    describe
+  }
 }

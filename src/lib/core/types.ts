@@ -1,48 +1,33 @@
-
-export interface InvokeContext<M extends RegistryMap = RegistryMap> {
-  nodeId: keyof M & string
-  actionId: keyof M[keyof M] & string
-  payload: M[keyof M][keyof M[keyof M]]['P']
-  result?: M[keyof M][keyof M[keyof M]]['R']
-}
-
-export interface ActionDefinition<P, R = void> {
+export interface ActionDefinition<P = void, R = void> {
   type: 'logic' | 'dom'
   label: string
+  description: string
   handler: (payload: P) => R | Promise<R>
   refKey?: string
-  meta?: Record<string, unknown>
+  meta?: Record<string, any>
 }
 
-export interface RegistryMap {
-  [nodeId: string]: {
-    [actionId: string]: { P: any; R: any }
-  }
-}
-
-export type Middleware<M extends RegistryMap = RegistryMap> = (
-  context: InvokeContext<M>,
+export type Middleware = (
+  ctx: { nodeId: string; actionId: string; payload: any; result?: any },
   next: () => Promise<any>
 ) => Promise<any>
 
-
-export interface UIActionInstance<M extends RegistryMap = RegistryMap> {
-  registerAction: <N extends keyof M & string, A extends keyof M[N] & string>(
-    nodeId: N,
-    actionId: A,
-    definition: ActionDefinition<M[N][A]['P'], M[N][A]['R']>
-  ) => void
-  invoke: <N extends keyof M & string, A extends keyof M[N] & string>(
-    nodeId: N,
-    actionId: A,
-    payload: M[N][A]['P']
-  ) => Promise<M[N][A]['R']>
-  registerMiddleware: (middleware: Middleware<M>) => void
+export interface UIActionInstance {
+  registerNode(nodeId: string, label: string, description: string): void
+  registerAction<P, R>(
+    nodeId: string,
+    actionId: string,
+    def: ActionDefinition<P, R>
+  ): void
+  unregisterAction(nodeId: string, actionId: string): void
+  invoke<P, R>(nodeId: string, actionId: string, payload: P): Promise<R>
+  registerMiddleware(mw: Middleware): void
+  describe(): Record<string, Record<string, ActionDefinition<any, any>>>
 }
 
-export type CounterMap = {
-  CounterBox: {
-    incrementBy: { P: number; R: void }
-  }
+export interface ExecutionContext<P = void, R = void> {
+  nodeId: string;
+  actionId: string;
+  payload: P;
+  result?: R;
 }
-
