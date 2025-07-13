@@ -1,33 +1,59 @@
-export interface ActionDefinition<P = void, R = void> {
-  type: 'logic' | 'dom'
-  label: string
-  description: string
-  handler: (payload: P) => R | Promise<R>
-  refKey?: string
-  meta?: Record<string, any>
+export type ComponentId = string
+export type ComponentName = string
+export type ActionId = string
+export type ActionName = string
+export type Description = string
+
+export interface ActionDescriptor<Payload = unknown, Result = unknown> {
+  actionId: ActionId
+  actionName: ActionName
+  description: Description
+  execute: (payload: Payload) => Result | Promise<Result>
 }
 
-export type Middleware = (
-  ctx: { nodeId: string; actionId: string; payload: any; result?: any },
-  next: () => Promise<any>
-) => Promise<any>
-
-export interface UIActionInstance {
-  registerNode(nodeId: string, label: string, description: string): void
-  registerAction<P, R>(
-    nodeId: string,
-    actionId: string,
-    def: ActionDefinition<P, R>
-  ): void
-  unregisterAction(nodeId: string, actionId: string): void
-  invoke<P, R>(nodeId: string, actionId: string, payload: P): Promise<R>
-  registerMiddleware(mw: Middleware): void
-  describe(): Record<string, Record<string, ActionDefinition<any, any>>>
+export interface ComponentRecord {
+  componentId: ComponentId
+  componentName: ComponentName
+  description: Description
+  actions: Map<ActionId, ActionDescriptor<any, any>>
 }
 
-export interface ExecutionContext<P = void, R = void> {
-  nodeId: string;
-  actionId: string;
-  payload: P;
-  result?: R;
+export interface TriggerRequest<Payload = unknown> {
+  componentId?: ComponentId
+  componentName?: ComponentName
+  actionId?: ActionId
+  actionName?: ActionName
+  payload: Payload
+  metadata?: Record<string, unknown>
+}
+
+export interface TriggerResponse<Result = unknown> {
+  result?: Result
+  error?: unknown
+}
+
+export interface RegisterComponentParam {
+  componentId?: ComponentId;
+  componentName?: ComponentName;
+  description?: Description;
+}
+
+export interface RegistryController {
+  registerComponent: (registerComponentParam: RegisterComponentParam) => ComponentId
+  unregisterComponent: (componentId: ComponentId) => void
+  registerAction: <P, R>(
+    componentId: ComponentId,
+    actionName: ActionName,
+    description: string,
+    execute: (payload: P) => R | Promise<R>
+  ) => ActionId
+  unregisterAction: (componentId: ComponentId, actionId: ActionId) => void
+  findComponents: (criteria: { componentId?: ComponentId; componentName?: ComponentName }) => ComponentRecord[]
+  findActions: (criteria: {
+    componentId?: ComponentId
+    componentName?: ComponentName
+    actionId?: ActionId
+    actionName?: ActionName
+  }) => [ComponentRecord, ActionDescriptor][]
+  trigger: <P, R>(request: TriggerRequest<P>) => Promise<TriggerResponse<R>>
 }
