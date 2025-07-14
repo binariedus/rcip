@@ -1,10 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useInputAssist } from '@lib/tools/InputAssist';
-import LauncherButton from "./LauncherButton";
+import LauncherButton from './LauncherButton';
 export default function InputAssistModal() {
-    const assist = useInputAssist((orig, prompt) => `✨ ${prompt}: ${orig}`);
+    const assist = useInputAssist();
     if (assist.state !== 'active') {
-        return (_jsx(LauncherButton, { status: assist.state, onActivate: () => assist.activate() }));
+        return _jsx(LauncherButton, { status: assist.state, onActivate: () => assist.activate() });
     }
     return (_jsxs("div", { style: {
             position: 'fixed',

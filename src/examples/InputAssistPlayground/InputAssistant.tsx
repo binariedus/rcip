@@ -1,16 +1,11 @@
 import { useInputAssist } from '@lib/tools/InputAssist'
-import LauncherButton from "./LauncherButton";
+import LauncherButton from './LauncherButton'
 
 export default function InputAssistModal() {
-  const assist = useInputAssist((orig, prompt) => `✨ ${prompt}: ${orig}`)
+  const assist = useInputAssist()
 
   if (assist.state !== 'active') {
-    return (
-      <LauncherButton
-        status={assist.state}
-        onActivate={() => assist.activate()}
-      />
-    )
+    return <LauncherButton status={assist.state} onActivate={() => assist.activate()} />
   }
 
   return (

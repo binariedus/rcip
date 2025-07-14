@@ -1,19 +1,18 @@
-import { useInputAssistHelpers } from '@lib/tools/InputAssist'
-import { useInputInterface } from './useInputInterface'
+import { useInputAssist, useInputAssistInterface } from '@lib/tools/InputAssist'
 
 export default function InputEditor() {
-  const { updateInputAssistContext, clearInputAssistContext } = useInputAssistHelpers()
-  const { componentId, text, setText, actions, metadata } = useInputInterface('', 'Hello World')
+  const assist = useInputAssist()
+  const { componentId, text, setText, actions, metadata } = useInputAssistInterface('', 'Hello World')
 
   const focus = () =>
-    updateInputAssistContext({
+    assist.updateContext({
       targetComponentId: componentId,
       getTextActionId: actions.get,
       updateTextActionId: actions.update,
       metadata
     })
 
-  const blur = () => clearInputAssistContext(componentId)
+  const blur = () => assist.clearContext(componentId)
 
   return (
     <textarea
@@ -24,5 +23,4 @@ export default function InputEditor() {
       onBlur={blur}
     />
   )
-
 }

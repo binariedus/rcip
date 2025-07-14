@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { useRcip } from '@lib/core/RcipProvider'
 import { useComponentInterface } from '@lib/core/useComponentInterface'
-import { InputAssistContext, InputAssistMessage, InputAssistState } from './types'
+import type {InputAssistApi, InputAssistContext as AssistPayload, InputAssistMessage, InputAssistState} from './types'
 
-export function useInputAssist(
+function useInputAssistInternal(
   refine: (original: string, prompt: string, meta?: Record<string, unknown>) => string
-) {
+): InputAssistApi {
   const { trigger } = useRcip()
   const { componentId: toolId, addAction } = useComponentInterface(
     'InputAssistTool',
@@ -13,7 +13,7 @@ export function useInputAssist(
   )
 
   const [state, setState] = useState<InputAssistState>('idle')
-  const [context, setContext] = useState<InputAssistContext | null>(null)
+  const [context, setContext] = useState<AssistPayload | null>(null)
   const [originalText, setOriginal] = useState('')
   const [refinedText, setRefined] = useState('')
   const [prompt, setPrompt] = useState('')
@@ -38,25 +38,20 @@ export function useInputAssist(
   }, [])
 
   useEffect(() => {
-    addAction<InputAssistContext, void>('setContext', 'Attach context', payload => {
+    addAction<AssistPayload, void>('setContext', 'Attach context', payload => {
       if (timer.current) clearTimeout(timer.current)
-
       setContext(payload)
       setState('ready')
       setOriginal('')
       setRefined('')
       setPrompt('')
       setMessages([])
-
     })
 
     addAction<{ targetComponentId: string }, void>('clearContext', 'Detach context', ({ targetComponentId }) => {
-
       if (timer.current) clearTimeout(timer.current)
-
       timer.current = window.setTimeout(() => {
         const same = ctxRef.current?.targetComponentId === targetComponentId
-
         if (same && stRef.current !== 'active') reset()
       }, 100)
     })
@@ -67,14 +62,12 @@ export function useInputAssist(
   }, [addAction, reset])
 
   const activate = useCallback(async () => {
-
     if (!context) return
     const { result } = await trigger({
       componentId: context.targetComponentId,
       actionId: context.getTextActionId,
       payload: {}
     })
-
     if (typeof result === 'string') {
       setOriginal(result)
       setState('active')
@@ -115,15 +108,40 @@ export function useInputAssist(
     accept,
     cancel,
     setState,
-    updateContext: (c: InputAssistContext) => trigger({
-      componentId: toolId,
-      actionName: 'setContext',
-      payload: c
-    }),
-    clearContext: (targetComponentId: string) => trigger({
-      componentId: toolId,
-      actionName: 'clearContext',
-      payload: { targetComponentId }
-    })
+    updateContext: async (c: AssistPayload) => {
+      await trigger({
+        componentId: toolId,
+        actionName: 'setContext',
+        payload: c
+      })
+    },
+
+    clearContext: async (targetComponentId: string) => {
+      await trigger({
+        componentId: toolId,
+        actionName: 'clearContext',
+        payload: { targetComponentId }
+      })
+    }
+
   }
+}
+
+const InputAssistReactContext = createContext<InputAssistApi | null>(null)
+
+export function InputAssistProvider({
+                                      children,
+                                      refine
+                                    }: {
+  children: ReactNode
+  refine?: (original: string, prompt: string, meta?: Record<string, unknown>) => string
+}) {
+  const value = useInputAssistInternal(refine ?? ((orig, prompt) => `✨ ${prompt}: ${orig}`))
+  return <InputAssistReactContext.Provider value={value}>{children}</InputAssistReactContext.Provider>
+}
+
+export function useInputAssist() {
+  const ctx = useContext(InputAssistReactContext)
+  if (!ctx) throw new Error('useInputAssist must be used within InputAssistProvider')
+  return ctx
 }

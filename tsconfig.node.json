@@ -9,7 +9,7 @@
     /* Bundler mode */
     "moduleResolution": "node",
     "moduleDetection": "force",
-    "noEmit": false,
+    "noEmit": true,
 
     /* Linting */
     "strict": true,

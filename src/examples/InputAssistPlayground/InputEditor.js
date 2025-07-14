@@ -1,15 +1,14 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import { useInputAssistHelpers } from '@lib/tools/InputAssist';
-import { useInputInterface } from './useInputInterface';
+import { useInputAssist, useInputAssistInterface } from '@lib/tools/InputAssist';
 export default function InputEditor() {
-    const { updateInputAssistContext, clearInputAssistContext } = useInputAssistHelpers();
-    const { componentId, text, setText, actions, metadata } = useInputInterface('', 'Hello World');
-    const focus = () => updateInputAssistContext({
+    const assist = useInputAssist();
+    const { componentId, text, setText, actions, metadata } = useInputAssistInterface('', 'Hello World');
+    const focus = () => assist.updateContext({
         targetComponentId: componentId,
         getTextActionId: actions.get,
         updateTextActionId: actions.update,
         metadata
     });
-    const blur = () => clearInputAssistContext(componentId);
+    const blur = () => assist.clearContext(componentId);
     return (_jsx("textarea", { style: { width: 400, minHeight: 120 }, value: text, onChange: e => setText(e.target.value), onFocus: focus, onBlur: blur }));
 }
