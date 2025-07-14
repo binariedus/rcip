@@ -11,7 +11,7 @@
   },
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
+  "types": "dist/lib/index.d.ts",
   "files": [
     "dist",
     "README.md"
