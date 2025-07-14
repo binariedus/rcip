@@ -5,11 +5,14 @@ export default function InputAssistModal() {
   const assist = useInputAssist()
 
   if (assist.state !== 'active') {
-    return <LauncherButton status={assist.state} onActivate={() => assist.activate()} />
+    return <LauncherButton status={assist.state} onActivate={() => {
+      assist.activate()
+    }} />
   }
 
   return (
     <div
+
       style={{
         position: 'fixed',
         top: '50%',

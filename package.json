@@ -22,9 +22,14 @@
       "require": "./dist/index.cjs.js"
     }
   },
+  "peerDependencies": {
+    "react": "^18 || ^19",
+    "react-dom": "^18 || ^19"
+  },
   "dependencies": {
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react": "^18 || ^19",
+    "react-dom": "^18 || ^19",
+    "rollup-plugin-peer-deps-external": "^2.2.4"
   },
   "devDependencies": {
     "@emotion/react": "^11.14.0",

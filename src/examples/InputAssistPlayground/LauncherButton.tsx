@@ -1,10 +1,18 @@
+import React, {useEffect} from "react";
+
 type Props = {
   status: 'idle' | 'ready' | 'active'
   onActivate: () => void
 }
 
 export default function LauncherButton({ status, onActivate }: Props) {
-  const enabled = status === 'ready'
+
+  const [enabled, setEnabled] = React.useState(false)
+
+  useEffect(() => {
+    setEnabled(status === 'ready')
+  }, [status])
+
   return (
     <button
       style={{
