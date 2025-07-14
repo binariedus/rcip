@@ -1,4 +1,4 @@
-import { useInputAssist } from '@lib/tools/InputAssist'
+import { useInputAssist } from '../../lib/tools/InputAssist'
 import LauncherButton from './LauncherButton'
 
 export default function InputAssistModal() {

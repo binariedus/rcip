@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { useRcip } from '@lib/core/RcipProvider'
-import { useComponentInterface } from '@lib/core/useComponentInterface'
+import { useRcip } from '../../core/RcipProvider'
+import { useComponentInterface } from '../../core/useComponentInterface'
 import type {InputAssistApi, InputAssistContext as AssistPayload, InputAssistMessage, InputAssistState} from './types'
 
 function useInputAssistInternal(

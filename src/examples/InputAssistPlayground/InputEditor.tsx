@@ -1,4 +1,4 @@
-import { useInputAssist, useInputAssistInterface } from '@lib/tools/InputAssist'
+import { useInputAssist, useInputAssistInterface } from '../../lib/tools/InputAssist'
 
 export default function InputEditor() {
   const assist = useInputAssist()

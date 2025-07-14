@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useComponentInterface } from '@lib/core/useComponentInterface'
+import { useComponentInterface } from '../../core/useComponentInterface'
 
 export function useInputAssistInterface(initial: string, title: string) {
   const [text, setText] = useState(initial)

@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import { RcipProvider } from '../../lib'
-import { InputAssistProvider } from '@lib/tools/InputAssist'
+import { InputAssistProvider } from '../../lib/tools/InputAssist'
 import InputAssistModal from './InputAssistant'
 import InputEditor from './InputEditor'
 
