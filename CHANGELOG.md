@@ -2,6 +2,12 @@
 
 All notable RCIP changes are documented here. RCIP follows semantic versioning.
 
+## 2.0.0-beta.1
+
+- Pinned the npm release toolchain and regenerated the lockfile with npm 11 so
+  clean CI installs use the same dependency resolution as release preparation.
+- No public API or runtime behavior changed from `2.0.0-beta.0`.
+
 ## 2.0.0-beta.0
 
 - Allow stable lower-camel capability identifier segments such as
