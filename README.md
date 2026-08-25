@@ -1,188 +1,208 @@
+# RCIP
 
-# RCIP – Runtime Component Interface Protocol for React
-**Self‑describing UI contracts & live control centre for modern React applications**
+**React Component Interface Protocol**
 
----
+RCIP is a small semantic control plane for React applications. An application
+declares stable product capabilities, binds them to its existing behavior, and
+gives consumer-defined tools a narrow client for discovery and invocation.
 
-## ▸ Executive Summary
-RCIP promotes every React component to a **runtime‑discoverable service**.  
-A component **declares** what it _is_ and what it _does_; RCIP records this in a lightweight, in‑memory registry that tools can **query** (for documentation) and **invoke** (for orchestration).  
-The result is a **living, typed interface layer** that doubles as both _documentation_ and _control centre_ for your running UI.
+RCIP does not expose the DOM or React component tree. It does not include an AI
+provider, chat interface, automation engine, or plugin marketplace. Human UI
+and semantic tools remain parallel interfaces over the same application code.
 
----
+## Install
 
-## ▸ Table of Contents
-1. [Philosophy](#philosophy)
-2. [High‑Level Architecture](#high-level-architecture)
-3. [Core Concepts](#core-concepts)
-4. [Quick Start](#quick-start)
-5. [Building Control‑Centre Tools](#building-control-centre-tools)
-6. [Advanced Patterns](#advanced-patterns)
-7. [Package Layout](#package-layout)
-
----
-
-## Philosophy
-| Goal | Manifestation in RCIP |
-|------|-----------------------|
-| **Runtime documentation** | Components publish names, descriptions, and typed action signatures. |
-| **Descriptive introspection** | A query API reveals the full interface surface at any moment. |
-| **Live control centre** | Any tool can trigger registered actions to steer the UI. |
-| **Single source of truth** | Registration + trigger flow are the only contracts; everything else is decoupled. |
-
----
-
-## High‑Level Architecture
-```
-┌───────────────────────────────────┐
-│           React Tree             │
-│ ┌────────────┐    ┌────────────┐ │
-│ │ Component A│    │ Component B│ │
-│ └─────┬──────┘    └────┬───────┘ │
-│       │ register        │ register
-└───────┼─────────────────┼─────────
-        ▼                 ▼
-   ┌──────────────────────────────┐
-   │        RCIP Registry         │
-   │  • Components metadata       │
-   │  • Actions (typed)           │
-   └────────┬──────────┬──────────┘
-            │ query    │ trigger
-            ▼          ▼
-   ┌──────────────────────────────┐
-   │       Control‑Centre Tools   │
-   │  e.g. Assistants, Testbots   │
-   └──────────────────────────────┘
-```
-
----
-
-## Core Concepts
-
-| Concept | Description |
-|---------|-------------|
-| **Component Record** | Immutable identity (`componentId`), human name, description. |
-| **Action Descriptor** | `(payload) ⇒ result` function registered against a component with a unique `actionId`, name, and description. |
-| **Registry Controller** | Provides _find_ (introspection) & _trigger_ (invocation) APIs. |
-| **Trigger Flow** | Caller specifies `{ componentId | componentName, actionId | actionName, payload }` and receives a typed `result`. |
-| **Tool** | A React component that consumes the registry to build higher‑level UX (assistant panel, admin console, automation harness). |
-
----
-
-## Quick Start
-
-### 1  Install & Wrap
 ```bash
-npm install @binaried/rcip
+npm install @binaried/rcip@beta
 ```
-```tsx
-import { RcipProvider } from '@binaried/rcip';
 
-function App() {
+RCIP 2 is currently available through the `beta` distribution tag. It
+implements protocol `1.0` and supports React 18 and React 19.
+
+## Package surfaces
+
+- `@binaried/rcip/core`: framework-neutral definitions, runtime, and types.
+- `@binaried/rcip/react`: React provider and host binding hooks.
+- `@binaried/rcip/explorer`: optional read-only capability registry UI.
+- `@binaried/rcip`: convenient combined core and React exports.
+
+## Define an application contract
+
+```tsx
+import {
+  RCIP_PROTOCOL_VERSION,
+  createRcipRuntime,
+  defineRcipApplication,
+  defineRcipCapability,
+  defineRcipScope,
+} from '@binaried/rcip/core'
+
+const todos = defineRcipScope({
+  id: 'todos',
+  title: 'Todos',
+  description: 'The user task area.',
+})
+
+const createTodo = defineRcipCapability<
+  { title: string },
+  { id: string; title: string }
+>({
+  id: 'todos.create',
+  title: 'Create todo',
+  description: 'Create one task.',
+  scopeIds: [todos.id],
+  effect: 'write',
+  inputSchema: {
+    type: 'object',
+    properties: { title: { type: 'string', minLength: 1 } },
+    required: ['title'],
+    additionalProperties: false,
+  },
+  outputSchema: {
+    type: 'object',
+    properties: {
+      id: { type: 'string' },
+      title: { type: 'string' },
+    },
+    required: ['id', 'title'],
+    additionalProperties: false,
+  },
+})
+
+const definition = defineRcipApplication({
+  protocolVersion: RCIP_PROTOCOL_VERSION,
+  application: {
+    id: 'example.todos',
+    name: 'Todos',
+    description: 'Example task application.',
+  },
+  scopes: [todos],
+  capabilities: [createTodo],
+})
+
+export const runtime = createRcipRuntime(definition, {
+  policy({ capability, confirmed }) {
+    if (capability.effect === 'read' || confirmed) {
+      return { decision: 'allow' }
+    }
+    return { decision: 'confirm' }
+  },
+})
+```
+
+## Bind existing React behavior
+
+```tsx
+import {
+  RcipProvider,
+  useRcipCapability,
+  useRcipContext,
+} from '@binaried/rcip/react'
+
+function TodoFeature() {
+  useRcipContext({
+    activeScopeIds: ['todos'],
+    primaryScopeId: 'todos',
+  })
+
+  useRcipCapability(createTodo, {
+    execute: ({ title }) => saveTodo(title),
+    getAvailability: () => ({
+      available: userCanCreateTodo(),
+    }),
+  })
+
+  return <TodoScreen />
+}
+
+export function App() {
   return (
-    <RcipProvider>
-      {/* your component tree */}
+    <RcipProvider runtime={runtime}>
+      <TodoFeature />
     </RcipProvider>
-  );
+  )
 }
 ```
 
-### 2  Describe a Component
-```tsx
-import { useComponentInterface } from '@binaried/rcip';
+Definitions describe a stable contract. Bindings connect that contract to live
+application state. The runtime validates availability, input, host policy,
+confirmation, execution, and output before returning a structured outcome.
 
-function Counter() {
-  const { componentId, addAction } = useComponentInterface(
-    'Counter',
-    'Simple counter widget'
-  );
+## Build a consumer-defined tool
 
-  const [count, setCount] = useState(0);
+A tool receives `RcipClient`, never the host controller.
 
-  const get = addAction('getCount', 'Return current count', () => count);
+```ts
+import type { RcipClient } from '@binaried/rcip/core'
 
-  const inc = addAction<void, void>(
-    'increment',
-    'Increase count by one',
-    () => setCount(c => c + 1)
-  );
+export async function listAvailableActions(client: RcipClient) {
+  return client.listCapabilities({
+    context: 'current',
+    availableOnly: true,
+  })
+}
 
-  return <button onClick={() => inc && setCount(c => c + 1)}>{count}</button>;
+export async function invokeCreateTodo(
+  client: RcipClient,
+  title: string,
+) {
+  return client.invoke({
+    capabilityId: 'todos.create',
+    input: { title },
+  })
 }
 ```
 
-### 3  Query & Invoke
-```tsx
-import { useRcip } from '@binaried/rcip';
+Tools own their model/provider integration, UI, progress state, and presentation
+of confirmation requests. Only trusted application code calls
+`runtime.host.resolveConfirmation`.
 
-function Dashboard() {
-  const rcip = useRcip();
+## Optional capability explorer
 
-  const components = rcip.findComponents({ componentName: 'Counter' });
-
-  const bumpAll = () =>
-    components.forEach(c =>
-      rcip.trigger({ componentId: c.componentId, actionName: 'increment', payload: undefined })
-    );
-
-  return <button onClick={bumpAll}>Increment every counter</button>;
-}
-```
-
----
-
-## Building Control‑Centre Tools
-
-A **tool** combines introspection + invocation to offer an interactive panel.
+The package ships one generic tool: a live, read-only registry dashboard.
 
 ```tsx
-import { useRcip, useComponentInterface } from '@binaried/rcip';
+import { RcipCapabilityExplorer } from '@binaried/rcip/explorer'
+import '@binaried/rcip/explorer/styles.css'
 
-function LoggerTool() {
-  const { componentId } = useComponentInterface('LoggerTool', 'Console logger');
-
-  const rcip = useRcip();
-  const [log, setLog] = useState<string[]>([]);
-
-  useEffect(() => {
-    const list = rcip.findComponents({});
-    list.forEach(rec =>
-      rec.actions.forEach(action =>
-        setLog(l => [...l, `${rec.componentName}.${action.actionName}`])
-      )
-    );
-  }, []);
-
-  return <pre>{log.join('\n')}</pre>;
-}
+<RcipCapabilityExplorer client={runtime.client} />
 ```
 
-> **Built‑in Example:** `@binaried/rcip/tools/InputAssist` implements an AI‑powered text refinement panel by attaching to any component that registers `getText` / `setText` actions.
+It displays every registered capability and highlights capabilities relevant to
+the current semantic context. It never invokes capabilities or observes tool
+execution state. CSS custom properties prefixed with `--rcip-explorer-` support
+consumer theming.
 
----
+## Run the reference pilot
 
-## Advanced Patterns
-
-| Pattern | Idea |
-|---------|------|
-| **Middleware** | Wrap `trigger()` to log, audit, or time every action execution. |
-| **Multi‑runtime federation** | Mount multiple `RcipProvider` trees to isolate domains (e.g., micro‑frontends). |
-| **Remote bridge** | Serialize `trigger` calls over WebSocket to control another browser tab or server‑side preview. |
-| **SSR preload** | Register components during server render to pre‑compute a sitemap of interactive regions. |
-
----
-
-## Package Layout
-```
-@binaried/rcip
-├─ core/
-│  ├─ RcipProvider.tsx          # registry & context
-│  ├─ useComponentInterface.ts  # component/action hook
-│  └─ types.ts
-└─ tools/
-   └─ InputAssist/              # reference implementation of a control‑centre tool
+```bash
+npm ci
+RCIP_PILOT_PORT=4173 npm run dev
 ```
 
-RCIP ships as pure TypeScript + React hooks — no build‑time plugins, no runtime dependencies beyond React.
+The pilot contains a normal Todos/Profile UI, a consumer-owned Control Panel,
+an optional model adapter with deterministic fallback, and the packaged
+capability explorer.
 
----
+Validation commands:
+
+```bash
+npm run check
+npm run test:e2e
+npm audit
+```
+
+## Documentation
+
+- [Protocol 1.0](docs/protocol.md)
+- [Security model](docs/security.md)
+- [Tool author guide](docs/tool-author-guide.md)
+- [Migrating from v1](docs/migration-v1-to-v2.md)
+- [Release runbook](docs/releasing.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security reporting](SECURITY.md)
+- [Changelog](CHANGELOG.md)
+
+## License
+
+Apache-2.0
