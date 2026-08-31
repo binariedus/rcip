@@ -237,7 +237,6 @@ const decide: RcipAssistDecide = async (request, { signal }) => {
   decide={decide}
   mode="interactive"
   title="Product Assist"
-  examplePrompts={['Add “Buy milk” to my todos']}
 />
 ```
 

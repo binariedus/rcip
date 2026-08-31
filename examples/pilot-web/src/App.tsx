@@ -377,11 +377,6 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
             : 'interactive'
         }
         title="RCIP Assist"
-        examplePrompts={[
-          'Add "Book flight tickets" to my todos',
-          'Show my profile',
-          'List my todos',
-        ]}
       />
       {pipelineFixtureEnabled ? (
         <output className="pipeline-trace" data-testid="input-pipeline-trace">

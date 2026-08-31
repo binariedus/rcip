@@ -54,7 +54,6 @@ interface IconProps {
 export interface RcipAssistProps extends UseRcipAssistOptions {
   readonly className?: string
   readonly defaultOpen?: boolean
-  readonly examplePrompts?: readonly string[]
   readonly placeholder?: string
   readonly title?: string
 }
@@ -163,7 +162,6 @@ export function RcipAssist({
   defaultOpen = false,
   decide,
   delayPresets,
-  examplePrompts = [],
   inputPipeline,
   maxBatchSize,
   mode = 'read-only',
@@ -493,24 +491,6 @@ export function RcipAssist({
               </div>
             ) : null}
           </div>
-
-          {examplePrompts.length > 0 && controller.messages.length <= 1 ? (
-            <div className="rcip-assist__examples" aria-label="Try asking">
-              <p>Try asking</p>
-              <div>
-                {examplePrompts.slice(0, 3).map((example) => (
-                  <button
-                    key={example}
-                    type="button"
-                    disabled={controller.busy}
-                    onClick={() => void submitMessage(example)}
-                  >
-                    {example}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
 
           {controller.pendingConfirmation ? (
             <section

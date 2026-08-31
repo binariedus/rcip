@@ -191,7 +191,7 @@ class DeterministicPilotAdapter implements PilotAgentAdapter {
 
     return {
       message:
-        'Try asking me to add, complete, or delete a todo, list todos, or update your display name.',
+        'I can add, complete, or delete a todo, list todos, or update your display name.',
       type: 'message',
     }
   }

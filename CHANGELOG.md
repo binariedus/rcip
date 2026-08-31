@@ -2,6 +2,12 @@
 
 All notable RCIP changes are documented here. RCIP follows semantic versioning.
 
+## 2.0.0-beta.4
+
+- Removed the in-chat example prompt section so Assist opens directly into a
+  focused conversation and composer experience.
+- Removed the corresponding `examplePrompts` UI prop during the v2 beta.
+
 ## 2.0.0-beta.3
 
 - Rebuilt the packaged Assist UI as a polished, responsive conversation panel
