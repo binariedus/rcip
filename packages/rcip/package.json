@@ -1,6 +1,6 @@
 {
   "name": "@binaried/rcip",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "description": "React Component Interface Protocol: a semantic capability control plane for React applications.",
   "license": "Apache-2.0",
   "keywords": [
@@ -78,6 +78,17 @@
       }
     },
     "./explorer/styles.css": "./styles/explorer.css",
+    "./assist": {
+      "import": {
+        "types": "./dist/assist/index.d.ts",
+        "default": "./dist/assist/index.js"
+      },
+      "require": {
+        "types": "./dist/assist/index.d.cts",
+        "default": "./dist/assist/index.cjs"
+      }
+    },
+    "./assist/styles.css": "./styles/assist.css",
     "./package.json": "./package.json"
   },
   "publishConfig": {

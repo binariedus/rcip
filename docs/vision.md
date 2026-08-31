@@ -17,13 +17,16 @@ over the same services and state.
 
 ## Product boundaries
 
-RCIP models application intent, not React components, DOM nodes, routes, model
-providers, or chat interactions. React is the first host adapter; the core
-contract remains framework-neutral.
+RCIP models application intent, not React components, DOM nodes, routes, or
+model providers. React is the first host adapter; the core contract remains
+framework-neutral.
 
-The SDK intentionally ships one optional generic tool: a read-only capability
-explorer. AI assistants, translators, narrators, command surfaces, floating
-status indicators, and future integrations are consumer-defined.
+The SDK intentionally ships two optional generic surfaces: a read-only
+capability explorer, and a provider-neutral Assist dot/floating panel with a
+headless orchestration hook. The consuming application supplies any AI or
+deterministic callback. Translators, narrators, command surfaces, and future
+integrations can reuse the same callback and client contracts or remain fully
+consumer-defined.
 
 A consumer tool can be as small as a dot that owns its own idle, working,
 confirmation, success, and error states. The application still owns capability

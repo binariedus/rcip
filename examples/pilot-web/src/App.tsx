@@ -13,6 +13,7 @@ import {
   useRcipCapability,
   useRcipContext,
 } from '@binaried/rcip'
+import { RcipAssist } from '@binaried/rcip/assist'
 
 import {
   completeTodoCapability,
@@ -27,6 +28,7 @@ import {
 } from './capabilities'
 import { Inspector } from './Inspector'
 import { PilotTools } from './PilotTools'
+import { pilotAssistDecide } from './pilotAssist'
 import { createPilotRuntime } from './runtime'
 
 type ActiveArea = 'profile' | 'todos'
@@ -287,6 +289,22 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
         <PilotTools runtime={runtime} />
         <Inspector events={events} runtime={runtime} />
       </div>
+      <RcipAssist
+        runtime={runtime}
+        decide={pilotAssistDecide}
+        mode={
+          new URLSearchParams(window.location.search).get('assistMode') ===
+          'read-only'
+            ? 'read-only'
+            : 'interactive'
+        }
+        title="RCIP Assist"
+        examplePrompts={[
+          'Add "Book flight tickets" to my todos',
+          'Show my profile',
+          'List my todos',
+        ]}
+      />
     </main>
   )
 }

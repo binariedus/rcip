@@ -16,7 +16,9 @@ capabilities. Every capability contains:
 - one or more semantic scopes;
 - an effect: `read`, `write`, `external`, or `destructive`;
 - strict JSON-compatible input and output schemas;
-- optional discovery tags.
+- optional discovery tags;
+- optional provider-neutral usage guidance with a `whenToUse` statement and
+  schema-valid examples.
 
 Effects inform host policy. They do not replace authentication, authorization,
 or domain validation.
@@ -66,6 +68,23 @@ tool progress or activity state.
 
 Snapshots contain contracts and redacted live status only. They never contain
 handlers, credentials, confirmation tokens, or private application records.
+Usage guidance is discovery metadata, so it must follow the same public and
+non-sensitive rules as titles, descriptions, schemas, and tags.
+
+## Assist orchestration
+
+`@binaried/rcip/assist` is an optional consumer over the same client and host
+surfaces. A host-provided callback receives a filtered snapshot, in-memory
+messages, mode, phase, and completed outcomes. In the decision phase it returns
+text or one bounded action batch. If actions ran, a final summarize-only phase
+may return text but cannot schedule more actions.
+
+The SDK executes a batch sequentially, stops on the first non-success outcome,
+supports cancellation and symbolic bounded delays, and delegates confirmation
+resolution to trusted host UI. Read-only mode removes non-read capabilities from
+callback discovery and rejects a proposed state-changing action locally. Assist
+does not define a provider, prompt format, network transport, or durable chat
+store.
 
 ## Invocation lifecycle
 

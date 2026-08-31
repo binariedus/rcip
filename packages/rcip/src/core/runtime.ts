@@ -126,6 +126,11 @@ function assertDefinition(definition: RcipApplicationDefinition): void {
       );
     }
     capabilityIds.add(capability.id);
+    if (capability.usage && !capability.usage.whenToUse.trim()) {
+      throw new Error(
+        `RCIP capability ${capability.id} has empty usage guidance.`,
+      );
+    }
     for (const scopeId of capability.scopeIds) {
       if (!scopeIds.has(scopeId)) {
         throw new Error(
@@ -173,6 +178,17 @@ export function createRcipRuntime(
   const definitions = new Map(
     definition.capabilities.map((capability) => [capability.id, capability]),
   );
+  for (const capability of definition.capabilities) {
+    if (!capability.usage?.examples) continue;
+    const validateExample = ajv.compile<RcipJsonValue>(capability.inputSchema);
+    for (const example of capability.usage.examples) {
+      if (!example.description.trim() || !validateExample(example.input)) {
+        throw new Error(
+          `RCIP capability ${capability.id} has an invalid usage example.`,
+        );
+      }
+    }
+  }
   const scopeIds = new Set(definition.scopes.map((scope) => scope.id));
   const bindings = new Map<string, InternalBinding>();
   const confirmations = new Map<string, PendingConfirmation>();
@@ -217,6 +233,15 @@ export function createRcipRuntime(
       inputSchema: capability.inputSchema,
       outputSchema: capability.outputSchema,
       tags: [...(capability.tags ?? [])],
+      usage: capability.usage
+        ? {
+            whenToUse: capability.usage.whenToUse,
+            examples: capability.usage.examples?.map((example) => ({
+              description: example.description,
+              input: example.input,
+            })),
+          }
+        : undefined,
       bound: Boolean(binding),
       available: Boolean(binding && availability?.available),
       availability,

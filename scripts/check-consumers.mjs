@@ -83,7 +83,12 @@ import {
   defineRcipApplication,
 } from '@binaried/rcip/core'
 import { RcipCapabilityExplorer } from '@binaried/rcip/explorer'
+import {
+  RcipAssist,
+  type RcipAssistDecide,
+} from '@binaried/rcip/assist'
 import '@binaried/rcip/explorer/styles.css'
+import '@binaried/rcip/assist/styles.css'
 
 if (RCIP_PROTOCOL_VERSION !== '1.0') throw new Error('Unexpected protocol.')
 
@@ -101,7 +106,19 @@ const runtime = createRcipRuntime(
 )
 const root = document.getElementById('root')
 if (!root) throw new Error('Missing root.')
-createRoot(root).render(<RcipCapabilityExplorer client={runtime.client} />)
+const decide: RcipAssistDecide = async (request) => ({
+  type: 'message',
+  message:
+    request.phase === 'summarize'
+      ? 'The action completed.'
+      : 'No actions are registered.',
+})
+createRoot(root).render(
+  <>
+    <RcipCapabilityExplorer client={runtime.client} />
+    <RcipAssist runtime={runtime} decide={decide} />
+  </>,
+)
 `,
   )
 

@@ -1,4 +1,9 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+
+async function openAssist(page: Page): Promise<void> {
+  await page.getByRole('button', { name: /Open RCIP Assist/ }).click()
+  await expect(page.getByRole('dialog', { name: 'RCIP Assist' })).toBeVisible()
+}
 
 test('discovers scopes and tracks the current semantic context', async ({
   page,
@@ -64,23 +69,22 @@ test('normal UI works without using the semantic assistant', async ({ page }) =>
   await expect(page.getByLabel('Display name')).toHaveValue('Jordan Lee')
 })
 
-test('control panel is the default tool and preserves its draft across tabs', async ({
+test('the SDK workbench and shipped floating assistant remain independent', async ({
   page,
 }) => {
   await page.goto('/')
   await expect(
-    page.getByRole('tab', { name: 'Control Panel' }),
-  ).toHaveAttribute('aria-selected', 'true')
-  await expect(page.getByRole('heading', { name: 'Capability control panel' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Semantic assistant' })).toBeHidden()
+    page.getByRole('heading', { name: 'Capability control panel' }),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: /Open RCIP Assist/ })).toBeVisible()
 
   await page.getByLabel('Capability input (JSON)').fill('{"draft": true}')
-  await page.getByRole('tab', { name: 'AI Delegate' }).click()
-  await expect(page.getByRole('heading', { name: 'Semantic assistant' })).toBeVisible()
-  await page.getByRole('tab', { name: 'Control Panel' }).click()
+  await openAssist(page)
   await expect(page.getByLabel('Capability input (JSON)')).toHaveValue(
     '{"draft": true}',
   )
+  await page.getByRole('button', { name: 'Close RCIP Assist' }).click()
+  await expect(page.getByRole('button', { name: /Open RCIP Assist/ })).toBeVisible()
 })
 
 test('control panel invokes a read capability and exposes the SDK outcome', async ({
@@ -167,14 +171,14 @@ test('control panel demonstrates an advertised but unbound capability', async ({
   )
 })
 
-test('assistant adds a todo only after confirmation', async ({ page }) => {
+test('shipped assistant adds a todo only after host confirmation', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('tab', { name: 'AI Delegate' }).click()
+  await openAssist(page)
   await page
     .getByRole('button', { name: 'Add "Book flight tickets" to my todos' })
     .click()
 
-  await expect(page.getByTestId('confirmation-card')).toBeVisible()
+  await expect(page.locator('[data-rcip-assist-confirmation]')).toBeVisible()
   await expect(
     page.locator('.todo-list').getByText('Book flight tickets'),
   ).toHaveCount(0)
@@ -183,22 +187,20 @@ test('assistant adds a todo only after confirmation', async ({ page }) => {
   await expect(
     page.locator('.todo-list').getByText('Book flight tickets'),
   ).toBeVisible()
-  await expect(page.getByTestId('agent-messages')).toContainText(
+  await expect(page.locator('[data-rcip-assist-messages]')).toContainText(
     'The new todo has been added.',
   )
-  await expect(page.getByTestId('agent-adapter')).toHaveText('deterministic')
 })
 
-test('assistant resolves a unique todo before completing it', async ({ page }) => {
+test('shipped assistant completes a uniquely identified pilot todo', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('tab', { name: 'AI Delegate' }).click()
-  await page
-    .getByRole('button', {
-      name: 'Mark "Submit expense report" as completed',
-    })
-    .click()
+  await openAssist(page)
+  await page.getByLabel('Request', { exact: true }).fill(
+    'Mark "Submit expense report" as completed',
+  )
+  await page.getByRole('button', { name: 'Send', exact: true }).click()
 
-  await expect(page.getByTestId('confirmation-card')).toBeVisible()
+  await expect(page.locator('[data-rcip-assist-confirmation]')).toBeVisible()
   await page.getByRole('button', { name: 'Confirm and run' }).click()
   await expect(
     page.getByTestId('todo-todo-1').getByText('Submit expense report'),
@@ -209,16 +211,16 @@ test('assistant asks for clarification when todo identity is ambiguous', async (
   page,
 }) => {
   await page.goto('/')
-  await page.getByRole('tab', { name: 'AI Delegate' }).click()
+  await openAssist(page)
   await page
     .getByRole('textbox', { name: 'Request', exact: true })
     .fill('Mark "Prepare pilot report" as completed')
-  await page.getByRole('button', { name: 'Send request' }).click()
+  await page.getByRole('button', { name: 'Send', exact: true }).click()
 
-  await expect(page.getByTestId('agent-messages')).toContainText(
+  await expect(page.locator('[data-rcip-assist-messages]')).toContainText(
     'Please clarify which one you mean.',
   )
-  await expect(page.getByTestId('confirmation-card')).toHaveCount(0)
+  await expect(page.locator('[data-rcip-assist-confirmation]')).toHaveCount(0)
   await expect(
     page.locator('.todo-list').getByText('Prepare pilot report'),
   ).toHaveCount(2)
@@ -228,19 +230,72 @@ test('destructive operation can be cancelled without changing state', async ({
   page,
 }) => {
   await page.goto('/')
-  await page.getByRole('tab', { name: 'AI Delegate' }).click()
-  await page
-    .getByRole('button', { name: 'Delete "Review security policy"' })
-    .click()
-  await expect(page.getByTestId('confirmation-card')).toBeVisible()
+  await openAssist(page)
+  await page.getByLabel('Request', { exact: true }).fill(
+    'Delete "Review security policy"',
+  )
+  await page.getByRole('button', { name: 'Send', exact: true }).click()
+  await expect(page.locator('[data-rcip-assist-confirmation]')).toBeVisible()
   await page.getByRole('button', { name: 'Cancel' }).click()
 
   await expect(
     page.getByTestId('todo-todo-2').getByText('Review security policy'),
   ).toBeVisible()
-  await expect(page.getByTestId('agent-messages')).toContainText(
+  await expect(page.locator('[data-rcip-assist-messages]')).toContainText(
     'I cancelled that operation',
   )
+})
+
+test('read-only mode rejects a proposed write before invoking the host', async ({
+  page,
+}) => {
+  await page.goto('/?assistMode=read-only')
+  await openAssist(page)
+  await page
+    .getByRole('button', { name: 'Add "Book flight tickets" to my todos' })
+    .click()
+
+  await expect(page.locator('[data-rcip-assist-confirmation]')).toHaveCount(0)
+  await expect(page.locator('[data-rcip-assist-messages]')).toContainText(
+    'read-only mode denied',
+  )
+  await expect(
+    page.locator('.todo-list').getByText('Book flight tickets'),
+  ).toHaveCount(0)
+})
+
+test('assistant executes one ordered batch and summarizes once', async ({ page }) => {
+  await page.goto('/')
+  await openAssist(page)
+  await page.getByLabel('Request', { exact: true }).fill(
+    'Add "Pack passport" to my todos and show my profile',
+  )
+  await page.getByRole('button', { name: 'Send', exact: true }).click()
+  await page.getByRole('button', { name: 'Confirm and run' }).click()
+  await expect(
+    page.locator('.todo-list').getByText('Pack passport'),
+  ).toBeVisible()
+  await expect(page.locator('[data-rcip-assist-messages]')).toContainText(
+    '2 requested actions completed successfully.',
+  )
+})
+
+test('floating assistant remains usable and contained on a narrow viewport', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await openAssist(page)
+  await expect(page.getByRole('dialog', { name: 'RCIP Assist' })).toBeVisible()
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          document.documentElement.scrollWidth <=
+          document.documentElement.clientWidth,
+      ),
+    )
+    .toBe(true)
 })
 
 test('runtime rejects invalid input and advertised but unbound capabilities', async ({

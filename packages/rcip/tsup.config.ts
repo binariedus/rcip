@@ -4,6 +4,7 @@ export default defineConfig({
   clean: true,
   dts: true,
   entry: {
+    'assist/index': 'src/assist/index.tsx',
     index: 'src/index.ts',
     'core/index': 'src/core/index.ts',
     'explorer/index': 'src/explorer/index.tsx',

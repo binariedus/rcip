@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test'
 
-const baseURL = process.env.RCIP_PILOT_URL ?? 'http://127.0.0.1:4000'
+const baseURL = process.env.RCIP_PILOT_URL ?? 'http://127.0.0.1:4176'
 const serverCommand = process.env.RCIP_E2E_SERVER_COMMAND ?? 'npm run dev'
 
 export default defineConfig({

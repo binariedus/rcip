@@ -51,13 +51,26 @@ operation is idempotent.
 
 ## Own tool state
 
-The tool owns its model/provider adapter, progress state, retries, conversation
-or non-conversation UI, and result presentation. RCIP does not prescribe those
-concerns.
+The tool normally owns its model/provider adapter, API transport, retries, and
+result presentation. RCIP does not prescribe a provider or network boundary.
 
 A floating assistant dot, narrator, translator, command palette, or background
 coordinator can all use the same client while presenting completely different
 experiences.
+
+## Start with the packaged Assist
+
+`@binaried/rcip/assist` provides a reusable orchestration hook and optional dot
+plus floating panel. Pass `runtime`, a `decide` callback, and an explicit mode.
+The callback receives the application snapshot and returns a message or a
+bounded action batch; it can call any provider or deterministic service chosen
+by the consumer.
+
+Keep provider calls server-side when they require credentials. Treat callback
+responses as untrusted: Assist bounds their shape and batch size, while the
+runtime remains authoritative for capability existence, schema, availability,
+policy, confirmation, and output. Use `useRcipAssist` when a translator,
+narrator, or custom surface needs the orchestration without the packaged UI.
 
 ## Preserve the boundary
 

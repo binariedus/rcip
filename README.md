@@ -7,8 +7,10 @@ declares stable product capabilities, binds them to its existing behavior, and
 gives consumer-defined tools a narrow client for discovery and invocation.
 
 RCIP does not expose the DOM or React component tree. It does not include an AI
-provider, chat interface, automation engine, or plugin marketplace. Human UI
-and semantic tools remain parallel interfaces over the same application code.
+provider, model credentials, automation service, or plugin marketplace. Human
+UI and semantic tools remain parallel interfaces over the same application
+code. An optional provider-neutral Assist dot and floating panel are included;
+the consuming application supplies the decision callback.
 
 ## Install
 
@@ -24,6 +26,7 @@ implements protocol `1.0` and supports React 18 and React 19.
 - `@binaried/rcip/core`: framework-neutral definitions, runtime, and types.
 - `@binaried/rcip/react`: React provider and host binding hooks.
 - `@binaried/rcip/explorer`: optional read-only capability registry UI.
+- `@binaried/rcip/assist`: optional Assist hook, dot, and floating panel.
 - `@binaried/rcip`: convenient combined core and React exports.
 
 ## Define an application contract
@@ -50,6 +53,12 @@ const createTodo = defineRcipCapability<
   id: 'todos.create',
   title: 'Create todo',
   description: 'Create one task.',
+  usage: {
+    whenToUse: 'Use when the user explicitly asks to add one task.',
+    examples: [
+      { description: 'Add a grocery task.', input: { title: 'Buy milk' } },
+    ],
+  },
   scopeIds: [todos.id],
   effect: 'write',
   inputSchema: {
@@ -153,9 +162,42 @@ export async function invokeCreateTodo(
 }
 ```
 
-Tools own their model/provider integration, UI, progress state, and presentation
-of confirmation requests. Only trusted application code calls
-`runtime.host.resolveConfirmation`.
+Tools own their model/provider integration and API transport. Only trusted
+application code calls `runtime.host.resolveConfirmation`.
+
+## Optional Assist tool
+
+The SDK ships a provider-neutral Assist tool that collapses to a status dot and
+expands into a draggable floating panel. The host passes its runtime and a
+consumer-owned asynchronous callback. RCIP supplies the current snapshot,
+conversation, and prior outcomes; the callback returns either a message or one
+bounded batch of capability invocations.
+
+```tsx
+import { RcipAssist, type RcipAssistDecide } from '@binaried/rcip/assist'
+import '@binaried/rcip/assist/styles.css'
+
+const decide: RcipAssistDecide = async (request, { signal }) => {
+  const response = await fetch('/api/assist', {
+    method: 'POST',
+    body: JSON.stringify(request),
+    signal,
+  })
+  return response.json()
+}
+
+<RcipAssist
+  runtime={runtime}
+  decide={decide}
+  mode="interactive"
+  examplePrompts={['Add "Buy milk" to my todos']}
+/>
+```
+
+Use `mode="read-only"` when the callback may discover and invoke only read
+capabilities. Interactive mode still goes through runtime availability, schema,
+host policy, and trusted host confirmation. The headless `useRcipAssist` hook is
+available for consumers that want a different UI.
 
 ## Optional capability explorer
 
@@ -177,12 +219,13 @@ consumer theming.
 
 ```bash
 npm ci
-RCIP_PILOT_PORT=4173 npm run dev
+RCIP_PILOT_PORT=4176 npm run dev
 ```
 
-The pilot contains a normal Todos/Profile UI, a consumer-owned Control Panel,
-an optional model adapter with deterministic fallback, and the packaged
-capability explorer.
+The standalone pilot contains a normal Todos/Profile UI, a consumer-owned
+Control Panel, the packaged Assist and Explorer tools, and a server-side
+optional model adapter with deterministic fallback. It does not require any
+HiNivaas service.
 
 Validation commands:
 

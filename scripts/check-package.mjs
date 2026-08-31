@@ -24,6 +24,10 @@ const requiredFiles = [
   'dist/core/index.cjs',
   'dist/core/index.d.ts',
   'dist/core/index.d.cts',
+  'dist/assist/index.js',
+  'dist/assist/index.cjs',
+  'dist/assist/index.d.ts',
+  'dist/assist/index.d.cts',
   'dist/explorer/index.js',
   'dist/explorer/index.cjs',
   'dist/explorer/index.d.ts',
@@ -33,6 +37,7 @@ const requiredFiles = [
   'dist/react/index.d.ts',
   'dist/react/index.d.cts',
   'styles/explorer.css',
+  'styles/assist.css',
   'LICENSE',
   'README.md',
   'package.json',
@@ -66,6 +71,11 @@ const explorerEntry = readFileSync(
 )
 if (!/from ['"]react['"]/.test(explorerEntry)) {
   throw new Error('React must remain external in the explorer package output.')
+}
+
+const assistEntry = readFileSync('packages/rcip/dist/assist/index.js', 'utf8')
+if (!/from ['"]react['"]/.test(assistEntry)) {
+  throw new Error('React must remain external in the assist package output.')
 }
 
 process.stdout.write(

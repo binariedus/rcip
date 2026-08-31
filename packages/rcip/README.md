@@ -19,6 +19,9 @@ existing stable major remains unchanged during evaluation.
 - `@binaried/rcip/explorer`: the optional read-only
   `RcipCapabilityExplorer`.
 - `@binaried/rcip/explorer/styles.css`: explorer default styles.
+- `@binaried/rcip/assist`: provider-neutral `RcipAssist`,
+  `useRcipAssist`, and callback contracts.
+- `@binaried/rcip/assist/styles.css`: Assist default styles.
 - `@binaried/rcip`: combined core and React exports.
 
 ## Minimal integration
@@ -64,6 +67,31 @@ import '@binaried/rcip/explorer/styles.css'
 The explorer displays all registered capabilities and highlights those relevant
 to the current semantic context. It is read-only and cannot invoke application
 behavior.
+
+## Assist
+
+```tsx
+import { RcipAssist, type RcipAssistDecide } from '@binaried/rcip/assist'
+import '@binaried/rcip/assist/styles.css'
+
+const decide: RcipAssistDecide = async (request, { signal }) => {
+  const response = await fetch('/api/assist', {
+    method: 'POST',
+    body: JSON.stringify(request),
+    signal,
+  })
+  return response.json()
+}
+
+<RcipAssist runtime={runtime} decide={decide} mode="read-only" />
+```
+
+Assist is a collapsed status dot and draggable floating conversation panel. It
+ships no AI provider, network transport, credentials, or application-specific
+logic. The callback may return text or one bounded action batch. Every action
+still passes through RCIP validation, host policy, and host-owned confirmation.
+Use `mode="interactive"` only when the host wants to expose state-changing
+capabilities.
 
 Full documentation, protocol guarantees, security guidance, and the v1
 migration guide are available at

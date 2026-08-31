@@ -29,9 +29,9 @@ const emptyInputSchema = {
 const todoSchema = {
   type: 'object',
   properties: {
-    completed: { type: 'boolean' },
-    id: { type: 'string' },
-    title: { type: 'string' },
+    completed: { description: 'Whether the todo is completed.', type: 'boolean' },
+    id: { description: 'Stable todo identifier.', type: 'string' },
+    title: { description: 'User-visible todo title.', type: 'string' },
   },
   required: ['completed', 'id', 'title'],
   additionalProperties: false,
@@ -70,6 +70,10 @@ export const listTodosCapability = defineRcipCapability<
   inputSchema: emptyInputSchema,
   outputSchema: todoListSchema,
   tags: ['todo', 'read'],
+  usage: {
+    whenToUse: 'Use when the user wants to see all current todo items.',
+    examples: [{ description: 'List every todo.', input: {} }],
+  },
 })
 
 export const searchTodosCapability = defineRcipCapability<
@@ -83,12 +87,24 @@ export const searchTodosCapability = defineRcipCapability<
   effect: 'read',
   inputSchema: {
     type: 'object',
-    properties: { query: { type: 'string', minLength: 1 } },
+    properties: {
+      query: {
+        description: 'Case-insensitive phrase to find in todo titles.',
+        type: 'string',
+        minLength: 1,
+      },
+    },
     required: ['query'],
     additionalProperties: false,
   },
   outputSchema: todoListSchema,
   tags: ['todo', 'search'],
+  usage: {
+    whenToUse: 'Use to find todos by a title phrase before presenting matches.',
+    examples: [
+      { description: 'Find expense-related todos.', input: { query: 'expense' } },
+    ],
+  },
 })
 
 export const createTodoCapability = defineRcipCapability<
@@ -102,12 +118,28 @@ export const createTodoCapability = defineRcipCapability<
   effect: 'write',
   inputSchema: {
     type: 'object',
-    properties: { title: { type: 'string', minLength: 1, maxLength: 160 } },
+    properties: {
+      title: {
+        description: 'Title of the new todo item.',
+        type: 'string',
+        minLength: 1,
+        maxLength: 160,
+      },
+    },
     required: ['title'],
     additionalProperties: false,
   },
   outputSchema: todoSchema,
   tags: ['todo', 'create'],
+  usage: {
+    whenToUse: 'Use when the user explicitly asks to add a new todo.',
+    examples: [
+      {
+        description: 'Add a travel reminder.',
+        input: { title: 'Book flight tickets' },
+      },
+    ],
+  },
 })
 
 export const completeTodoCapability = defineRcipCapability<TodoIdInput, Todo>({
@@ -118,12 +150,24 @@ export const completeTodoCapability = defineRcipCapability<TodoIdInput, Todo>({
   effect: 'write',
   inputSchema: {
     type: 'object',
-    properties: { id: { type: 'string', minLength: 1 } },
+    properties: {
+      id: {
+        description: 'Stable identifier of the todo to complete.',
+        type: 'string',
+        minLength: 1,
+      },
+    },
     required: ['id'],
     additionalProperties: false,
   },
   outputSchema: todoSchema,
   tags: ['todo', 'complete'],
+  usage: {
+    whenToUse: 'Use only when one exact todo identifier is already known.',
+    examples: [
+      { description: 'Complete the first pilot todo.', input: { id: 'todo-1' } },
+    ],
+  },
 })
 
 export const deleteTodoCapability = defineRcipCapability<
@@ -137,7 +181,13 @@ export const deleteTodoCapability = defineRcipCapability<
   effect: 'destructive',
   inputSchema: {
     type: 'object',
-    properties: { id: { type: 'string', minLength: 1 } },
+    properties: {
+      id: {
+        description: 'Stable identifier of the todo to permanently delete.',
+        type: 'string',
+        minLength: 1,
+      },
+    },
     required: ['id'],
     additionalProperties: false,
   },
@@ -148,6 +198,12 @@ export const deleteTodoCapability = defineRcipCapability<
     additionalProperties: false,
   },
   tags: ['todo', 'delete'],
+  usage: {
+    whenToUse: 'Use only after one exact todo is identified for deletion.',
+    examples: [
+      { description: 'Delete the second pilot todo.', input: { id: 'todo-2' } },
+    ],
+  },
 })
 
 export const viewProfileCapability = defineRcipCapability<EmptyInput, Profile>({
@@ -167,6 +223,10 @@ export const viewProfileCapability = defineRcipCapability<EmptyInput, Profile>({
     additionalProperties: false,
   },
   tags: ['profile', 'read'],
+  usage: {
+    whenToUse: 'Use when the user asks to view their current profile.',
+    examples: [{ description: 'View the signed-in profile.', input: {} }],
+  },
 })
 
 export const updateProfileCapability = defineRcipCapability<
@@ -181,7 +241,12 @@ export const updateProfileCapability = defineRcipCapability<
   inputSchema: {
     type: 'object',
     properties: {
-      displayName: { type: 'string', minLength: 1, maxLength: 80 },
+      displayName: {
+        description: 'New user-visible display name.',
+        type: 'string',
+        minLength: 1,
+        maxLength: 80,
+      },
     },
     required: ['displayName'],
     additionalProperties: false,
@@ -196,6 +261,15 @@ export const updateProfileCapability = defineRcipCapability<
     additionalProperties: false,
   },
   tags: ['profile', 'update'],
+  usage: {
+    whenToUse: 'Use when the user explicitly requests a display-name change.',
+    examples: [
+      {
+        description: 'Change the display name.',
+        input: { displayName: 'Alex Morgan' },
+      },
+    ],
+  },
 })
 
 export const exportProfileCapability = defineRcipCapability<
@@ -215,6 +289,10 @@ export const exportProfileCapability = defineRcipCapability<
     additionalProperties: false,
   },
   tags: ['profile', 'export'],
+  usage: {
+    whenToUse: 'Use when profile export is connected and explicitly requested.',
+    examples: [{ description: 'Export the profile.', input: {} }],
+  },
 })
 
 export const pilotDefinition = defineRcipApplication({

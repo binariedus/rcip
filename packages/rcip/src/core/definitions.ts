@@ -27,6 +27,18 @@ export function defineRcipCapability<
     ...definition,
     scopeIds: freezeArray(definition.scopeIds),
     tags: definition.tags ? freezeArray(definition.tags) : undefined,
+    usage: definition.usage
+      ? Object.freeze({
+          ...definition.usage,
+          examples: definition.usage.examples
+            ? freezeArray(
+                definition.usage.examples.map((example) =>
+                  Object.freeze({ ...example }),
+                ),
+              )
+            : undefined,
+        })
+      : undefined,
   })
 }
 

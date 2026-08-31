@@ -25,10 +25,11 @@ Effect labels are policy signals, not authorization. Production hosts should
 apply server-side authorization, recent authentication, rate limits, durable
 audit records, or domain approval when their risk model requires them.
 
-Tools own their UI and execution state. When an invocation returns
+Tools own their provider boundary. When an invocation returns
 `confirmation_required`, trusted application code must present the decision
-and call `runtime.host.resolveConfirmation`. A model or third-party tool must
-never resolve its own confirmation.
+and call `runtime.host.resolveConfirmation`. The packaged Assist panel is
+trusted host UI only when mounted by the application with its own runtime; a
+model or third-party callback never receives the host confirmation control.
 
 ## Data and credentials
 
@@ -40,6 +41,11 @@ Keep provider credentials in a trusted server environment. The reference
 pilot's optional model adapter runs server-side; only sanitized decisions reach
 the browser. It is a demonstration, not a production authentication or
 multi-user boundary.
+
+Assist conversations are in-memory and are not persisted by the SDK. A
+consumer callback chooses what it transmits externally and is responsible for
+notice, consent, minimization, retention, provider policy, and redaction. Do not
+assume the snapshot is private merely because it contains no credentials.
 
 ## Failure handling
 

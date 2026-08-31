@@ -49,7 +49,11 @@ export function pilotAgentPlugin(
           return
         }
         try {
-          const decision = await adapter.decide(await readJsonBody(request))
+          const abortController = new AbortController()
+          request.once('aborted', () => abortController.abort())
+          const decision = await adapter.decide(await readJsonBody(request), {
+            signal: abortController.signal,
+          })
           sendJson(response, 200, decision)
         } catch {
           sendJson(response, 400, { error: 'invalid_agent_request' })

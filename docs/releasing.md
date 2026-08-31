@@ -52,13 +52,13 @@ published under the npm `beta` distribution tag, so ordinary
 `npm install @binaried/rcip` consumers remain on the current stable release.
 
 1. Set the same prerelease version in the root and package `package.json`
-   files, for example `2.0.0-beta.0`.
+   files, for example `2.0.0-beta.2`.
 2. Complete the validation and review steps in the release checklist below.
 3. Create an annotated tag matching the prerelease exactly:
 
    ```bash
-   git tag -a v2.0.0-beta.0 -m "RCIP 2.0.0 beta 0"
-   git push origin v2.0.0-beta.0
+   git tag -a v2.0.0-beta.2 -m "RCIP 2.0.0 beta 2"
+   git push origin v2.0.0-beta.2
    ```
 
 4. Approve the protected npm environment deployment and verify that `beta`
@@ -114,7 +114,9 @@ iteration must use a new version such as `2.0.0-beta.1`.
     minimal discovery/render check.
 
 Version `2.0.0` intentionally moves the `latest` tag from v1 to v2. Existing
-v1 versions remain installable by exact version.
+v1 versions remain installable by exact version. Do not push the stable tag
+until QA has approved the beta against packed-package standalone and real
+consumer integration checks.
 
 ## If a release is bad
 

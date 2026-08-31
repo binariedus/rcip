@@ -43,6 +43,22 @@ export interface RcipScopeDefinition {
   readonly parentId?: string
 }
 
+/** One valid, tool-readable example for a capability input contract. */
+export interface RcipCapabilityExample<
+  Input extends RcipJsonValue = RcipJsonValue,
+> {
+  readonly description: string
+  readonly input: Input
+}
+
+/** Optional provider-neutral guidance for capability consumers. */
+export interface RcipCapabilityUsage<
+  Input extends RcipJsonValue = RcipJsonValue,
+> {
+  readonly whenToUse: string
+  readonly examples?: readonly RcipCapabilityExample<Input>[]
+}
+
 /** Static semantic contract for one user-meaningful application operation. */
 export interface RcipCapabilityDefinition<
   Input extends RcipJsonValue = RcipJsonValue,
@@ -56,6 +72,7 @@ export interface RcipCapabilityDefinition<
   readonly inputSchema: RcipJsonSchema
   readonly outputSchema: RcipJsonSchema
   readonly tags?: readonly string[]
+  readonly usage?: RcipCapabilityUsage<Input>
   readonly __types?: {
     readonly input: Input
     readonly output: Output
@@ -113,6 +130,7 @@ export interface RcipCapabilitySnapshot {
   readonly inputSchema: RcipJsonSchema
   readonly outputSchema: RcipJsonSchema
   readonly tags: readonly string[]
+  readonly usage?: RcipCapabilityUsage
   readonly bound: boolean
   readonly available: boolean
   readonly availability?: RcipAvailability

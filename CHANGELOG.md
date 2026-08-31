@@ -2,6 +2,18 @@
 
 All notable RCIP changes are documented here. RCIP follows semantic versioning.
 
+## 2.0.0-beta.2
+
+- Added optional provider-neutral capability usage guidance and schema-valid
+  examples to definitions and discovery snapshots.
+- Added the packaged `@binaried/rcip/assist` dot, draggable floating panel,
+  headless hook, explicit interactive/read-only modes, host confirmation,
+  cancellation, bounded sequential batches, and summarize-only phase.
+- Added React 18/19 packed-consumer coverage for Assist and its styles export.
+- Reworked the standalone pilot to use the packaged Assist with deterministic
+  behavior and an optional consumer-owned server-side provider adapter.
+- Moved the standalone pilot default from port 4000 to temporary port 4176.
+
 ## 2.0.0-beta.1
 
 - Pinned the npm release toolchain and regenerated the lockfile with npm 11 so

@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), pilotAgentPlugin(environment)],
     server: {
       host: process.env.RCIP_PILOT_HOST ?? '0.0.0.0',
-      port: Number(process.env.RCIP_PILOT_PORT ?? 4000),
+      port: Number(process.env.RCIP_PILOT_PORT ?? 4176),
       strictPort: true,
     },
   }
