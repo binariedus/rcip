@@ -1,0 +1,310 @@
+.rcip-explorer {
+  --rcip-explorer-accent: #3156d3;
+  --rcip-explorer-accent-soft: #eef2ff;
+  --rcip-explorer-background: #ffffff;
+  --rcip-explorer-border: #dfe4ee;
+  --rcip-explorer-muted: #667085;
+  --rcip-explorer-ready: #17653c;
+  --rcip-explorer-ready-soft: #e6f7ee;
+  --rcip-explorer-text: #172033;
+
+  border: 1px solid var(--rcip-explorer-border);
+  border-radius: 18px;
+  background: var(--rcip-explorer-background);
+  color: var(--rcip-explorer-text);
+  box-shadow: 0 14px 40px rgba(28, 39, 65, 0.06);
+  padding: 24px;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+.rcip-explorer *,
+.rcip-explorer *::before,
+.rcip-explorer *::after {
+  box-sizing: border-box;
+}
+
+.rcip-explorer__header,
+.rcip-explorer__toolbar,
+.rcip-explorer__card-heading,
+.rcip-explorer__badges,
+.rcip-explorer__filters,
+.rcip-explorer__scopes {
+  display: flex;
+  align-items: center;
+}
+
+.rcip-explorer__header,
+.rcip-explorer__toolbar,
+.rcip-explorer__card-heading {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.rcip-explorer__header {
+  align-items: flex-start;
+}
+
+.rcip-explorer__eyebrow {
+  margin: 0 0 4px;
+  color: var(--rcip-explorer-accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rcip-explorer h2,
+.rcip-explorer h3,
+.rcip-explorer h4 {
+  margin: 0;
+}
+
+.rcip-explorer__description {
+  max-width: 720px;
+  margin: 7px 0 0;
+  color: var(--rcip-explorer-muted);
+  line-height: 1.5;
+}
+
+.rcip-explorer__protocol,
+.rcip-explorer__revision,
+.rcip-explorer__badge,
+.rcip-explorer__scopes span {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.rcip-explorer__protocol {
+  flex: 0 0 auto;
+  border: 1px solid #cbd4ea;
+  padding: 7px 11px;
+  color: #43516d;
+}
+
+.rcip-explorer__summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.rcip-explorer__summary div {
+  border: 1px solid var(--rcip-explorer-border);
+  border-radius: 11px;
+  padding: 10px 12px;
+}
+
+.rcip-explorer__summary dt {
+  color: var(--rcip-explorer-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rcip-explorer__summary dd {
+  margin: 4px 0 0;
+  font-weight: 750;
+}
+
+.rcip-explorer__toolbar {
+  margin-bottom: 12px;
+}
+
+.rcip-explorer__filters {
+  gap: 5px;
+  border: 1px solid var(--rcip-explorer-border);
+  border-radius: 10px;
+  background: #f5f7fb;
+  padding: 4px;
+}
+
+.rcip-explorer__filters button {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #536078;
+  cursor: pointer;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.rcip-explorer__filters button[aria-pressed="true"] {
+  background: #fff;
+  color: #2445b7;
+  box-shadow: 0 1px 5px rgba(28, 39, 65, 0.12);
+  font-weight: 750;
+}
+
+.rcip-explorer__filters button:focus-visible,
+.rcip-explorer summary:focus-visible {
+  outline: 3px solid rgba(49, 86, 211, 0.22);
+  outline-offset: 2px;
+}
+
+.rcip-explorer__revision {
+  color: var(--rcip-explorer-muted);
+}
+
+.rcip-explorer__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.rcip-explorer__card {
+  min-width: 0;
+  border: 1px solid var(--rcip-explorer-border);
+  border-left: 4px solid #aeb8ca;
+  border-radius: 11px;
+  padding: 13px 14px;
+}
+
+.rcip-explorer__card--active {
+  border-left-color: var(--rcip-explorer-accent);
+  background: #fafbff;
+}
+
+.rcip-explorer__card-heading {
+  align-items: flex-start;
+}
+
+.rcip-explorer__card h3 {
+  font-size: 0.98rem;
+}
+
+.rcip-explorer__card code {
+  color: #58657d;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72rem;
+}
+
+.rcip-explorer__card > p {
+  margin: 10px 0;
+  color: var(--rcip-explorer-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.rcip-explorer__badges,
+.rcip-explorer__scopes {
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.rcip-explorer__badges {
+  justify-content: flex-end;
+}
+
+.rcip-explorer__badge,
+.rcip-explorer__scopes span {
+  background: #eef0f4;
+  color: #5e687b;
+  padding: 4px 7px;
+}
+
+.rcip-explorer__badge--active {
+  background: var(--rcip-explorer-accent-soft);
+  color: #2445b7;
+}
+
+.rcip-explorer__badge--ready {
+  background: var(--rcip-explorer-ready-soft);
+  color: var(--rcip-explorer-ready);
+}
+
+.rcip-explorer__badge--muted {
+  background: #f0f1f4;
+  color: #737b8b;
+}
+
+.rcip-explorer__availability {
+  border-radius: 8px;
+  background: #fff7e8;
+  color: #77570f !important;
+  padding: 8px 10px;
+}
+
+.rcip-explorer__schemas {
+  margin-top: 12px;
+}
+
+.rcip-explorer__schemas summary {
+  color: #43516d;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.rcip-explorer__schemas > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.rcip-explorer__schemas h4 {
+  margin-bottom: 5px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.rcip-explorer__schemas pre {
+  max-height: 220px;
+  overflow: auto;
+  margin: 0;
+  border-radius: 8px;
+  background: #111827;
+  color: #dbe6ff;
+  padding: 10px;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.rcip-explorer__empty {
+  border: 1px dashed var(--rcip-explorer-border);
+  border-radius: 11px;
+  color: var(--rcip-explorer-muted);
+  padding: 20px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .rcip-explorer {
+    padding: 18px;
+  }
+
+  .rcip-explorer__header,
+  .rcip-explorer__toolbar,
+  .rcip-explorer__card-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .rcip-explorer__protocol {
+    align-self: flex-start;
+  }
+
+  .rcip-explorer__summary,
+  .rcip-explorer__list,
+  .rcip-explorer__schemas > div {
+    grid-template-columns: 1fr;
+  }
+
+  .rcip-explorer__filters {
+    align-self: stretch;
+  }
+
+  .rcip-explorer__filters button {
+    flex: 1;
+  }
+
+  .rcip-explorer__badges {
+    justify-content: flex-start;
+  }
+}

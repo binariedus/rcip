@@ -1,7 +1,8 @@
 {
   "files": [],
   "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+    { "path": "./packages/rcip" },
+    { "path": "./examples/pilot-web/tsconfig.app.json" },
+    { "path": "./examples/pilot-web/tsconfig.node.json" }
   ]
 }
