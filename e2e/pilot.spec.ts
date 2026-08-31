@@ -293,9 +293,11 @@ test('control panel demonstrates an advertised but unbound capability', async ({
 test('shipped assistant adds a todo only after host confirmation', async ({ page }) => {
   await page.goto('/')
   await openAssist(page)
+  await expect(page.getByText('Try asking', { exact: true })).toHaveCount(0)
   await page
-    .getByRole('button', { name: 'Add "Book flight tickets" to my todos' })
-    .click()
+    .getByLabel('Request', { exact: true })
+    .fill('Add "Book flight tickets" to my todos')
+  await page.getByRole('button', { name: 'Send request' }).click()
 
   await expect(page.locator('[data-rcip-assist-confirmation]')).toBeVisible()
   await expect(
@@ -371,8 +373,9 @@ test('read-only mode rejects a proposed write before invoking the host', async (
   await page.goto('/?assistMode=read-only')
   await openAssist(page)
   await page
-    .getByRole('button', { name: 'Add "Book flight tickets" to my todos' })
-    .click()
+    .getByLabel('Request', { exact: true })
+    .fill('Add "Book flight tickets" to my todos')
+  await page.getByRole('button', { name: 'Send request' }).click()
 
   await expect(page.locator('[data-rcip-assist-confirmation]')).toHaveCount(0)
   await expect(page.locator('[data-rcip-assist-messages]')).toContainText(

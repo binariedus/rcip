@@ -306,7 +306,6 @@
 .rcip-assist__heading h2,
 .rcip-assist__heading p,
 .rcip-assist__message p,
-.rcip-assist__examples p,
 .rcip-assist__confirmation h3,
 .rcip-assist__confirmation p,
 .rcip-assist__composer-hint,
@@ -451,57 +450,6 @@
 
 .rcip-assist__thinking span:nth-child(3) {
   animation-delay: 240ms;
-}
-
-.rcip-assist__examples {
-  padding: 2px 18px 14px;
-}
-
-.rcip-assist__examples > p {
-  margin-bottom: 8px;
-  color: var(--rcip-assist-muted);
-  font-size: 0.66rem;
-  font-weight: 760;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-}
-
-.rcip-assist__examples > div {
-  display: flex;
-  overflow-x: auto;
-  gap: 7px;
-  padding-bottom: 2px;
-  scrollbar-width: none;
-}
-
-.rcip-assist__examples > div::-webkit-scrollbar {
-  display: none;
-}
-
-.rcip-assist__examples button {
-  flex: 0 0 auto;
-  max-width: 250px;
-  overflow: hidden;
-  border: 1px solid var(--rcip-assist-border);
-  border-radius: 999px;
-  background: var(--rcip-assist-background);
-  color: var(--rcip-assist-text);
-  cursor: pointer;
-  padding: 7px 11px;
-  font-size: 0.71rem;
-  font-weight: 620;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition:
-    border-color 140ms ease,
-    background 140ms ease,
-    transform 140ms ease;
-}
-
-.rcip-assist__examples button:hover {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--rcip-assist-accent) 30%, var(--rcip-assist-border));
-  background: var(--rcip-assist-accent-soft);
 }
 
 .rcip-assist__confirmation {
