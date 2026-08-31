@@ -2,6 +2,26 @@
 
 All notable RCIP changes are documented here. RCIP follows semantic versioning.
 
+## 2.0.0-beta.3
+
+- Rebuilt the packaged Assist UI as a polished, responsive conversation panel
+  with keyboard/touch alternatives, reduced-motion support, accessible status
+  announcements, and automatic light/dark presentation.
+- Changed the collapsed dot to single-click simulated listening and
+  double-click chat opening. The simulation captures no audio, calls no
+  provider, and invokes no capability.
+- Added consumer-owned voice adapters and ordered audio/text input processors
+  for capture → transcription → refinement → Assist pipelines.
+- Fixed dragged panel state so closing restores the launcher and the next panel
+  opening to the original configured anchor.
+- Removed capability disclosure from Assist; the separate read-only Explorer
+  remains the capability inspection surface.
+- Expanded package and repository documentation with a complete integration
+  flow, input-pipeline guide, accessibility behavior, theming, and security
+  boundaries.
+- Added browser coverage for click arbitration, input processing, keyboard
+  controls, drag reset, and the updated responsive UI.
+
 ## 2.0.0-beta.2
 
 - Added optional provider-neutral capability usage guidance and schema-valid

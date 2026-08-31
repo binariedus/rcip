@@ -13,7 +13,10 @@ import {
   useRcipCapability,
   useRcipContext,
 } from '@binaried/rcip'
-import { RcipAssist } from '@binaried/rcip/assist'
+import {
+  RcipAssist,
+  type RcipAssistInputPipeline,
+} from '@binaried/rcip/assist'
 
 import {
   completeTodoCapability,
@@ -54,7 +57,58 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
   })
   const [newTodoTitle, setNewTodoTitle] = useState('')
   const [profileDraft, setProfileDraft] = useState(profile.displayName)
+  const [pipelineTrace, setPipelineTrace] = useState<readonly string[]>([])
   const nextTodoId = useRef(5)
+  const pipelineFixtureEnabled =
+    new URLSearchParams(window.location.search).get('voicePipeline') ===
+    'fixture'
+  const inputPipeline = useMemo<RcipAssistInputPipeline | undefined>(
+    () =>
+      pipelineFixtureEnabled
+        ? {
+            voice: {
+              start() {
+                setPipelineTrace(['capture:start'])
+              },
+              async stop() {
+                setPipelineTrace((current) => [...current, 'capture:stop'])
+                return {
+                  data: new Blob(['pilot audio'], { type: 'audio/webm' }),
+                  mimeType: 'audio/webm',
+                  type: 'audio',
+                }
+              },
+            },
+            processors: [
+              {
+                id: 'pilot-transcribe',
+                async process(input) {
+                  setPipelineTrace((current) => [
+                    ...current,
+                    'processor:transcribe',
+                  ])
+                  return input.type === 'audio'
+                    ? { text: 'show my todos', type: 'text' }
+                    : input
+                },
+              },
+              {
+                id: 'pilot-refine',
+                async process(input) {
+                  setPipelineTrace((current) => [
+                    ...current,
+                    'processor:refine',
+                  ])
+                  return input.type === 'text'
+                    ? { text: input.text.replace('show', 'list'), type: 'text' }
+                    : input
+                },
+              },
+            ],
+          }
+        : undefined,
+    [pipelineFixtureEnabled],
+  )
 
   const semanticContext = useMemo(
     () => ({
@@ -198,6 +252,29 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
         <span className="pilot-badge">Protocol 1.0 reference</span>
       </header>
 
+      <section className="protocol-flow" aria-label="RCIP integration flow">
+        <div>
+          <span>01</span>
+          <strong>Declare</strong>
+          <p>Describe stable product capabilities and schemas.</p>
+        </div>
+        <div>
+          <span>02</span>
+          <strong>Bind</strong>
+          <p>Connect contracts to existing application behavior.</p>
+        </div>
+        <div>
+          <span>03</span>
+          <strong>Discover</strong>
+          <p>Give trusted tools a live, contextual capability view.</p>
+        </div>
+        <div>
+          <span>04</span>
+          <strong>Invoke</strong>
+          <p>Validate policy, confirmation, execution, and output.</p>
+        </div>
+      </section>
+
       <div className="layout">
         <section className="panel application-panel" aria-labelledby="app-heading">
           <div className="panel-heading-row">
@@ -292,6 +369,7 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
       <RcipAssist
         runtime={runtime}
         decide={pilotAssistDecide}
+        inputPipeline={inputPipeline}
         mode={
           new URLSearchParams(window.location.search).get('assistMode') ===
           'read-only'
@@ -305,6 +383,11 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
           'List my todos',
         ]}
       />
+      {pipelineFixtureEnabled ? (
+        <output className="pipeline-trace" data-testid="input-pipeline-trace">
+          {pipelineTrace.join(' → ')}
+        </output>
+      ) : null}
     </main>
   )
 }

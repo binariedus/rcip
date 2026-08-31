@@ -17,6 +17,11 @@ import type {
   RcipAssistDecide,
   RcipAssistDelay,
   RcipAssistDelayPresets,
+  RcipAssistInput,
+  RcipAssistInputFailure,
+  RcipAssistInputOrigin,
+  RcipAssistInputPipeline,
+  RcipAssistInputStatus,
   RcipAssistMessage,
   RcipAssistMode,
   RcipAssistPendingConfirmation,
@@ -24,6 +29,7 @@ import type {
   RcipAssistResponse,
   RcipAssistStatus,
   RcipAssistStep,
+  RcipAssistVoiceAdapter,
 } from './types'
 
 const DEFAULT_DELAYS: RcipAssistDelayPresets = {
@@ -35,6 +41,7 @@ const DEFAULT_MAX_BATCH_SIZE = 8
 const MAX_BATCH_SIZE = 32
 const MAX_DELAY_MS = 10_000
 const SUCCESS_STATUS_MS = 1_500
+const SIMULATED_VOICE_PROCESSING_MS = 1_000
 let assistIdSequence = 0
 
 interface ConfirmationWaiter {
@@ -46,6 +53,7 @@ interface ConfirmationWaiter {
 export interface UseRcipAssistOptions {
   readonly decide: RcipAssistDecide
   readonly delayPresets?: Partial<RcipAssistDelayPresets>
+  readonly inputPipeline?: RcipAssistInputPipeline
   readonly maxBatchSize?: number
   readonly mode?: RcipAssistMode
   readonly runtime: RcipRuntime
@@ -56,14 +64,24 @@ export interface UseRcipAssistOptions {
 export interface RcipAssistController {
   readonly busy: boolean
   readonly cancel: () => void
+  readonly cancelInput: () => void
   readonly clear: () => void
+  readonly inputError: RcipAssistInputFailure | null
+  readonly inputStatus: RcipAssistInputStatus
   readonly messages: readonly RcipAssistMessage[]
   readonly mode: RcipAssistMode
   readonly pendingConfirmation: RcipAssistPendingConfirmation | null
   readonly resolveConfirmation: (approved: boolean) => Promise<void>
   readonly send: (message: string) => Promise<void>
   readonly snapshot: RcipApplicationSnapshot
+  readonly startVoiceInput: () => Promise<void>
   readonly status: RcipAssistStatus
+  readonly stopVoiceInput: () => Promise<void>
+  readonly submitInput: (
+    input: RcipAssistInput,
+    origin?: RcipAssistInputOrigin,
+  ) => Promise<void>
+  readonly voiceEnabled: boolean
 }
 
 function createAssistId(prefix: string): string {
@@ -143,6 +161,38 @@ function abortableDelay(milliseconds: number, signal: AbortSignal) {
     }
     signal.addEventListener('abort', abort, { once: true })
   })
+}
+
+const simulatedVoiceAdapter: RcipAssistVoiceAdapter = {
+  start() {},
+  async stop({ signal }) {
+    await abortableDelay(SIMULATED_VOICE_PROCESSING_MS, signal)
+    return null
+  },
+}
+
+class AssistInputError extends Error {
+  readonly failure: RcipAssistInputFailure
+
+  constructor(failure: RcipAssistInputFailure) {
+    super(failure.message)
+    this.name = 'AssistInputError'
+    this.failure = failure
+  }
+}
+
+function inputFailure(
+  code: RcipAssistInputFailure['code'],
+  message: string,
+): AssistInputError {
+  return new AssistInputError({ code, message })
+}
+
+function configuredVoiceAdapter(
+  pipeline: RcipAssistInputPipeline | undefined,
+): RcipAssistVoiceAdapter | null {
+  if (pipeline?.voice === false) return null
+  return pipeline?.voice ?? simulatedVoiceAdapter
 }
 
 function validMessageResponse(
@@ -230,6 +280,7 @@ function requestFor(
 export function useRcipAssist({
   decide,
   delayPresets,
+  inputPipeline,
   maxBatchSize,
   mode = 'read-only',
   runtime,
@@ -241,6 +292,10 @@ export function useRcipAssist({
   const [pendingConfirmation, setPendingConfirmation] =
     useState<RcipAssistPendingConfirmation | null>(null)
   const [status, setStatus] = useState<RcipAssistStatus>('idle')
+  const [inputStatus, setInputStatus] =
+    useState<RcipAssistInputStatus>('idle')
+  const [inputError, setInputError] =
+    useState<RcipAssistInputFailure | null>(null)
   const snapshot = useSyncExternalStore(
     runtime.client.subscribe,
     runtime.client.getSnapshot,
@@ -248,12 +303,15 @@ export function useRcipAssist({
   )
   const messagesRef = useRef(messages)
   const confirmationWaiterRef = useRef<ConfirmationWaiter | null>(null)
+  const inputAbortRef = useRef<AbortController | null>(null)
+  const voiceAdapterRef = useRef<RcipAssistVoiceAdapter | null>(null)
   const turnAbortRef = useRef<AbortController | null>(null)
   const successTimerRef = useRef<number | null>(null)
   const mountedRef = useRef(true)
   const currentOptionsRef = useRef({
     decide,
     delayPresets,
+    inputPipeline,
     maxBatchSize,
     mode,
     runtime,
@@ -262,6 +320,7 @@ export function useRcipAssist({
   currentOptionsRef.current = {
     decide,
     delayPresets,
+    inputPipeline,
     maxBatchSize,
     mode,
     runtime,
@@ -313,7 +372,7 @@ export function useRcipAssist({
     [showStatus],
   )
 
-  const send = useCallback(
+  const runTurn = useCallback(
     async (rawMessage: string): Promise<void> => {
       const normalizedMessage = rawMessage.trim()
       if (!normalizedMessage || turnAbortRef.current) return
@@ -433,6 +492,181 @@ export function useRcipAssist({
     [appendMessage, replaceMessages, showStatus, waitForConfirmation],
   )
 
+  const finishInput = useCallback(
+    (
+      abortController: AbortController,
+      failure: RcipAssistInputFailure | null = null,
+    ) => {
+      if (inputAbortRef.current !== abortController) return
+      inputAbortRef.current = null
+      voiceAdapterRef.current = null
+      if (!mountedRef.current) return
+      setInputError(failure)
+      setInputStatus(failure ? 'error' : 'idle')
+    },
+    [],
+  )
+
+  const processInput = useCallback(
+    async (
+      initialInput: RcipAssistInput,
+      origin: RcipAssistInputOrigin,
+      abortController: AbortController,
+    ): Promise<void> => {
+      try {
+        let currentInput: RcipAssistInput | null = initialInput
+        const options = currentOptionsRef.current
+        for (const processor of options.inputPipeline?.processors ?? []) {
+          if (abortController.signal.aborted) throw abortError()
+          if (!processor.id.trim()) {
+            throw inputFailure(
+              'INPUT_PROCESSOR_FAILED',
+              'An Assist input processor is missing its identifier.',
+            )
+          }
+          try {
+            currentInput = await processor.process(currentInput, {
+              origin,
+              signal: abortController.signal,
+              snapshot: options.runtime.client.getSnapshot(),
+            })
+          } catch (error) {
+            if (error instanceof Error && error.name === 'AbortError') {
+              throw error
+            }
+            throw inputFailure(
+              'INPUT_PROCESSOR_FAILED',
+              `The input processor "${processor.id}" could not complete.`,
+            )
+          }
+          if (currentInput === null) break
+        }
+
+        if (abortController.signal.aborted) throw abortError()
+        if (currentInput === null) {
+          finishInput(abortController)
+          return
+        }
+        if (currentInput.type !== 'text') {
+          throw inputFailure(
+            'INPUT_PIPELINE_INCOMPLETE',
+            'The input pipeline must produce text before Assist can continue.',
+          )
+        }
+        const normalizedText = currentInput.text.trim()
+        finishInput(abortController)
+        if (normalizedText) await runTurn(normalizedText)
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          finishInput(abortController)
+          return
+        }
+        finishInput(
+          abortController,
+          error instanceof AssistInputError
+            ? error.failure
+            : {
+                code: 'INPUT_PROCESSOR_FAILED',
+                message: 'The Assist input pipeline could not complete.',
+              },
+        )
+      }
+    },
+    [finishInput, runTurn],
+  )
+
+  const submitInput = useCallback(
+    async (
+      input: RcipAssistInput,
+      origin: RcipAssistInputOrigin = 'composer',
+    ): Promise<void> => {
+      if (turnAbortRef.current || inputAbortRef.current) return
+      const abortController = new AbortController()
+      inputAbortRef.current = abortController
+      setInputError(null)
+      setInputStatus('processing')
+      await processInput(input, origin, abortController)
+    },
+    [processInput],
+  )
+
+  const send = useCallback(
+    async (message: string): Promise<void> => {
+      await submitInput({ text: message, type: 'text' }, 'composer')
+    },
+    [submitInput],
+  )
+
+  const startVoiceInput = useCallback(async (): Promise<void> => {
+    if (turnAbortRef.current || inputAbortRef.current) return
+    const adapter = configuredVoiceAdapter(
+      currentOptionsRef.current.inputPipeline,
+    )
+    if (!adapter) return
+
+    const abortController = new AbortController()
+    inputAbortRef.current = abortController
+    voiceAdapterRef.current = adapter
+    setInputError(null)
+    setInputStatus('starting')
+    try {
+      await adapter.start({ signal: abortController.signal })
+      if (abortController.signal.aborted) throw abortError()
+      if (inputAbortRef.current === abortController && mountedRef.current) {
+        setInputStatus('listening')
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        finishInput(abortController)
+        return
+      }
+      finishInput(abortController, {
+        code: 'VOICE_START_FAILED',
+        message: 'Voice input could not start.',
+      })
+    }
+  }, [finishInput])
+
+  const stopVoiceInput = useCallback(async (): Promise<void> => {
+    const abortController = inputAbortRef.current
+    const adapter = voiceAdapterRef.current
+    if (!abortController || !adapter || inputStatus !== 'listening') return
+    setInputStatus('processing')
+    try {
+      const input = await adapter.stop({ signal: abortController.signal })
+      if (abortController.signal.aborted) throw abortError()
+      voiceAdapterRef.current = null
+      if (input === null) {
+        finishInput(abortController)
+        return
+      }
+      await processInput(input, 'voice', abortController)
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        finishInput(abortController)
+        return
+      }
+      finishInput(abortController, {
+        code: 'VOICE_STOP_FAILED',
+        message: 'Voice input could not be processed.',
+      })
+    }
+  }, [finishInput, inputStatus, processInput])
+
+  const cancelInput = useCallback(() => {
+    const adapter = voiceAdapterRef.current
+    inputAbortRef.current?.abort()
+    inputAbortRef.current = null
+    voiceAdapterRef.current = null
+    if (mountedRef.current) {
+      setInputError(null)
+      setInputStatus('idle')
+    }
+    if (adapter?.cancel) {
+      void Promise.resolve(adapter.cancel()).catch(() => undefined)
+    }
+  }, [])
+
   const resolveConfirmation = useCallback(
     async (approved: boolean): Promise<void> => {
       const waiter = confirmationWaiterRef.current
@@ -463,8 +697,10 @@ export function useRcipAssist({
   }, [pendingConfirmation, resolveConfirmation])
 
   const clear = useCallback(() => {
-    if (turnAbortRef.current) return
+    if (turnAbortRef.current || inputAbortRef.current) return
     replaceMessages(initialMessages(currentOptionsRef.current.welcomeMessage))
+    setInputError(null)
+    setInputStatus('idle')
     showStatus('idle')
   }, [replaceMessages, showStatus])
 
@@ -473,6 +709,12 @@ export function useRcipAssist({
     return () => {
       mountedRef.current = false
       turnAbortRef.current?.abort()
+      inputAbortRef.current?.abort()
+      if (voiceAdapterRef.current?.cancel) {
+        void Promise.resolve(voiceAdapterRef.current.cancel()).catch(
+          () => undefined,
+        )
+      }
       confirmationWaiterRef.current?.reject(abortError())
       if (successTimerRef.current !== null) {
         window.clearTimeout(successTimerRef.current)
@@ -482,27 +724,41 @@ export function useRcipAssist({
 
   return useMemo(
     () => ({
-      busy: Boolean(turnAbortRef.current),
+      busy: Boolean(turnAbortRef.current || inputAbortRef.current),
       cancel,
+      cancelInput,
       clear,
+      inputError,
+      inputStatus,
       messages,
       mode,
       pendingConfirmation,
       resolveConfirmation,
       send,
       snapshot,
+      startVoiceInput,
       status,
+      stopVoiceInput,
+      submitInput,
+      voiceEnabled: configuredVoiceAdapter(inputPipeline) !== null,
     }),
     [
       cancel,
+      cancelInput,
       clear,
+      inputError,
+      inputPipeline,
+      inputStatus,
       messages,
       mode,
       pendingConfirmation,
       resolveConfirmation,
       send,
       snapshot,
+      startVoiceInput,
       status,
+      stopVoiceInput,
+      submitInput,
     ],
   )
 }

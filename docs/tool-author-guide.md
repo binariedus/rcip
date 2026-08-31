@@ -72,6 +72,13 @@ runtime remains authoritative for capability existence, schema, availability,
 policy, confirmation, and output. Use `useRcipAssist` when a translator,
 narrator, or custom surface needs the orchestration without the packaged UI.
 
+Assist also accepts an ordered input pipeline. A consumer-owned voice adapter
+may return audio, a transcription processor may turn it into text, and later
+processors may refine that text before the normal decision callback runs.
+Composer text uses the same chain. Processors transform input only; they do not
+receive the host controller and cannot bypass capability policy. See
+[Assist and input pipelines](assist-and-input-pipelines.md).
+
 ## Preserve the boundary
 
 Pass only `RcipClient` into tool code. Keep `runtime.host`, authorization,

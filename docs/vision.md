@@ -28,6 +28,12 @@ deterministic callback. Translators, narrators, command surfaces, and future
 integrations can reuse the same callback and client contracts or remain fully
 consumer-defined.
 
+Assist input is composable without making providers part of the protocol. A
+consumer-owned voice source and ordered audio/text processors can form a chain
+such as capture → transcription → refinement → decision. The SDK owns lifecycle
+and cancellation; consumers still own capture, transport, credentials, and
+provider selection.
+
 A consumer tool can be as small as a dot that owns its own idle, working,
 confirmation, success, and error states. The application still owns capability
 execution, authorization, and confirmation.

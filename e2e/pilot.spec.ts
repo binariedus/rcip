@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 async function openAssist(page: Page): Promise<void> {
-  await page.getByRole('button', { name: /Open RCIP Assist/ }).click()
+  await page.locator('.rcip-assist__dot').dblclick()
   await expect(page.getByRole('dialog', { name: 'RCIP Assist' })).toBeVisible()
 }
 
@@ -76,7 +76,7 @@ test('the SDK workbench and shipped floating assistant remain independent', asyn
   await expect(
     page.getByRole('heading', { name: 'Capability control panel' }),
   ).toBeVisible()
-  await expect(page.getByRole('button', { name: /Open RCIP Assist/ })).toBeVisible()
+  await expect(page.locator('.rcip-assist__dot')).toBeVisible()
 
   await page.getByLabel('Capability input (JSON)').fill('{"draft": true}')
   await openAssist(page)
@@ -84,7 +84,126 @@ test('the SDK workbench and shipped floating assistant remain independent', asyn
     '{"draft": true}',
   )
   await page.getByRole('button', { name: 'Close RCIP Assist' }).click()
-  await expect(page.getByRole('button', { name: /Open RCIP Assist/ })).toBeVisible()
+  await expect(page.locator('.rcip-assist__dot')).toBeVisible()
+})
+
+test('collapsed Assist distinguishes voice input from opening chat', async ({
+  page,
+}) => {
+  const decideRequests: string[] = []
+  page.on('request', (request) => {
+    if (request.url().includes('/api/agent/decide')) {
+      decideRequests.push(request.url())
+    }
+  })
+  await page.goto('/')
+
+  const assist = page.locator('[data-rcip-assist]')
+  const dot = assist.locator('.rcip-assist__dot')
+  await dot.click()
+  await expect(assist).toHaveAttribute(
+    'data-rcip-assist-input-status',
+    'listening',
+  )
+  await expect(dot).toHaveAttribute('aria-pressed', 'true')
+
+  await dot.click()
+  await expect(assist).toHaveAttribute(
+    'data-rcip-assist-input-status',
+    'processing',
+  )
+  await expect(assist).toHaveAttribute('data-rcip-assist-input-status', 'idle', {
+    timeout: 3_000,
+  })
+  await expect(page.getByRole('dialog', { name: 'RCIP Assist' })).toHaveCount(0)
+  expect(decideRequests).toEqual([])
+
+  await dot.dblclick()
+  await expect(page.getByRole('dialog', { name: 'RCIP Assist' })).toBeVisible()
+})
+
+test('keyboard controls expose chat and simulated voice without pointer gestures', async ({
+  page,
+}) => {
+  await page.goto('/')
+  const dot = page.locator('.rcip-assist__dot')
+  await dot.focus()
+  await dot.press('Enter')
+  await expect(page.getByRole('dialog', { name: 'RCIP Assist' })).toBeVisible()
+  await page.getByRole('button', { name: 'Close RCIP Assist' }).click()
+  await expect(dot).toBeFocused()
+
+  await dot.press('Space')
+  await expect(page.locator('[data-rcip-assist]')).toHaveAttribute(
+    'data-rcip-assist-input-status',
+    'listening',
+  )
+})
+
+test('closing a dragged panel restores the launcher anchor', async ({ page }) => {
+  await page.goto('/')
+  const dot = page.locator('.rcip-assist__dot')
+  const originalBox = await dot.boundingBox()
+  expect(originalBox).not.toBeNull()
+
+  await openAssist(page)
+  const header = page.locator('.rcip-assist__header')
+  const headerBox = await header.boundingBox()
+  expect(headerBox).not.toBeNull()
+  if (!headerBox) return
+  await page.mouse.move(headerBox.x + 90, headerBox.y + 34)
+  await page.mouse.down()
+  await page.mouse.move(90, 120, { steps: 6 })
+  await page.mouse.up()
+  await page.getByRole('button', { name: 'Close RCIP Assist' }).click()
+
+  const restoredBox = await dot.boundingBox()
+  expect(restoredBox).not.toBeNull()
+  if (!originalBox || !restoredBox) return
+  expect(Math.abs(restoredBox.x - originalBox.x)).toBeLessThan(1)
+  expect(Math.abs(restoredBox.y - originalBox.y)).toBeLessThan(1)
+})
+
+test('voice input runs ordered processors and auto-sends final text', async ({
+  page,
+}) => {
+  await page.goto('/?voicePipeline=fixture')
+  const assist = page.locator('[data-rcip-assist]')
+  const dot = assist.locator('.rcip-assist__dot')
+
+  await dot.click()
+  await expect(assist).toHaveAttribute(
+    'data-rcip-assist-input-status',
+    'listening',
+  )
+  await dot.click()
+
+  await expect(page.getByTestId('input-pipeline-trace')).toHaveText(
+    'capture:start → capture:stop → processor:transcribe → processor:refine',
+  )
+  await openAssist(page)
+  await expect(page.locator('[data-rcip-assist-messages]')).toContainText(
+    'I retrieved your current todos.',
+  )
+  await expect(page.locator('.rcip-assist__message--user')).toContainText(
+    'list my todos',
+  )
+})
+
+test('composer text also passes through the configured input pipeline', async ({
+  page,
+}) => {
+  await page.goto('/?voicePipeline=fixture')
+  await openAssist(page)
+  await page.getByLabel('Request', { exact: true }).fill('show my todos')
+  await page.getByRole('button', { name: 'Send request' }).click()
+
+  await expect(page.getByTestId('input-pipeline-trace')).toHaveText(
+    'processor:transcribe → processor:refine',
+  )
+  await expect(page.locator('.rcip-assist__message--user')).toContainText(
+    'list my todos',
+  )
 })
 
 test('control panel invokes a read capability and exposes the SDK outcome', async ({
@@ -198,7 +317,7 @@ test('shipped assistant completes a uniquely identified pilot todo', async ({ pa
   await page.getByLabel('Request', { exact: true }).fill(
     'Mark "Submit expense report" as completed',
   )
-  await page.getByRole('button', { name: 'Send', exact: true }).click()
+  await page.getByRole('button', { name: 'Send request' }).click()
 
   await expect(page.locator('[data-rcip-assist-confirmation]')).toBeVisible()
   await page.getByRole('button', { name: 'Confirm and run' }).click()
@@ -215,7 +334,7 @@ test('assistant asks for clarification when todo identity is ambiguous', async (
   await page
     .getByRole('textbox', { name: 'Request', exact: true })
     .fill('Mark "Prepare pilot report" as completed')
-  await page.getByRole('button', { name: 'Send', exact: true }).click()
+  await page.getByRole('button', { name: 'Send request' }).click()
 
   await expect(page.locator('[data-rcip-assist-messages]')).toContainText(
     'Please clarify which one you mean.',
@@ -234,7 +353,7 @@ test('destructive operation can be cancelled without changing state', async ({
   await page.getByLabel('Request', { exact: true }).fill(
     'Delete "Review security policy"',
   )
-  await page.getByRole('button', { name: 'Send', exact: true }).click()
+  await page.getByRole('button', { name: 'Send request' }).click()
   await expect(page.locator('[data-rcip-assist-confirmation]')).toBeVisible()
   await page.getByRole('button', { name: 'Cancel' }).click()
 
@@ -270,7 +389,7 @@ test('assistant executes one ordered batch and summarizes once', async ({ page }
   await page.getByLabel('Request', { exact: true }).fill(
     'Add "Pack passport" to my todos and show my profile',
   )
-  await page.getByRole('button', { name: 'Send', exact: true }).click()
+  await page.getByRole('button', { name: 'Send request' }).click()
   await page.getByRole('button', { name: 'Confirm and run' }).click()
   await expect(
     page.locator('.todo-list').getByText('Pack passport'),

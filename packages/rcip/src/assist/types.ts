@@ -17,6 +17,82 @@ export type RcipAssistStatus =
   | 'success'
   | 'working'
 
+/** Lifecycle state for text and voice input before an Assist turn begins. */
+export type RcipAssistInputStatus =
+  | 'error'
+  | 'idle'
+  | 'listening'
+  | 'processing'
+  | 'starting'
+
+/** Origin of an input moving through the configured processor pipeline. */
+export type RcipAssistInputOrigin = 'composer' | 'voice'
+
+/** Text input accepted by the Assist input pipeline. */
+export interface RcipAssistTextInput {
+  readonly text: string
+  readonly type: 'text'
+}
+
+/** Browser audio input accepted by a transcription-style processor. */
+export interface RcipAssistAudioInput {
+  readonly data: Blob
+  readonly mimeType: string
+  readonly type: 'audio'
+}
+
+/** Value transformed by ordered Assist input processors. */
+export type RcipAssistInput = RcipAssistAudioInput | RcipAssistTextInput
+
+/** Cancellation and live application context supplied to an input processor. */
+export interface RcipAssistInputContext {
+  readonly origin: RcipAssistInputOrigin
+  readonly signal: AbortSignal
+  readonly snapshot: RcipApplicationSnapshot
+}
+
+/** One ordered audio/text transformation in an Assist input pipeline. */
+export interface RcipAssistInputProcessor {
+  readonly id: string
+  readonly process: (
+    input: RcipAssistInput,
+    context: RcipAssistInputContext,
+  ) => Promise<RcipAssistInput | null>
+}
+
+/** Cancellation context supplied to the consumer-owned voice adapter. */
+export interface RcipAssistVoiceContext {
+  readonly signal: AbortSignal
+}
+
+/**
+ * Consumer-owned voice capture boundary. RCIP ships a simulation by default;
+ * a real adapter may request permission and return audio or text from stop().
+ */
+export interface RcipAssistVoiceAdapter {
+  readonly cancel?: () => Promise<void> | void
+  readonly start: (context: RcipAssistVoiceContext) => Promise<void> | void
+  readonly stop: (
+    context: RcipAssistVoiceContext,
+  ) => Promise<RcipAssistInput | null>
+}
+
+/** Ordered input processors and optional voice source used by Assist. */
+export interface RcipAssistInputPipeline {
+  readonly processors?: readonly RcipAssistInputProcessor[]
+  readonly voice?: false | RcipAssistVoiceAdapter
+}
+
+/** Stable, user-safe failure from voice capture or input processing. */
+export interface RcipAssistInputFailure {
+  readonly code:
+    | 'INPUT_PIPELINE_INCOMPLETE'
+    | 'INPUT_PROCESSOR_FAILED'
+    | 'VOICE_START_FAILED'
+    | 'VOICE_STOP_FAILED'
+  readonly message: string
+}
+
 /** The three bounded pacing choices an assist callback may request. */
 export type RcipAssistDelay = 'long' | 'medium' | 'short'
 

@@ -85,6 +85,68 @@ main {
   font-weight: 700;
 }
 
+.protocol-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 1px solid #dce2ee;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 34px rgba(28, 39, 65, 0.05);
+}
+
+.protocol-flow > div {
+  position: relative;
+  min-height: 120px;
+  padding: 20px;
+}
+
+.protocol-flow > div + div {
+  border-left: 1px solid #e3e7ef;
+}
+
+.protocol-flow span {
+  display: block;
+  margin-bottom: 12px;
+  color: #3156d3;
+  font-size: 0.65rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.protocol-flow strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #202a3d;
+  font-size: 0.92rem;
+}
+
+.protocol-flow p {
+  margin: 0;
+  color: #657086;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.pipeline-trace {
+  position: fixed;
+  right: 96px;
+  bottom: 28px;
+  z-index: 10;
+  max-width: min(620px, calc(100vw - 180px));
+  overflow: hidden;
+  border: 1px solid #cbd4ea;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #43516d;
+  padding: 7px 12px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(330px, 0.95fr);
@@ -705,6 +767,18 @@ pre {
     grid-template-columns: 1fr;
   }
 
+  .protocol-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .protocol-flow > div:nth-child(3) {
+    border-left: 0;
+  }
+
+  .protocol-flow > div:nth-child(n + 3) {
+    border-top: 1px solid #e3e7ef;
+  }
+
   .inspector {
     grid-column: auto;
   }
@@ -749,6 +823,31 @@ pre {
 
   .panel {
     padding: 18px;
+  }
+
+  .protocol-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .protocol-flow > div {
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .protocol-flow > div + div,
+  .protocol-flow > div:nth-child(3) {
+    border-top: 1px solid #e3e7ef;
+    border-left: 0;
+  }
+
+  .protocol-flow span {
+    margin-bottom: 7px;
+  }
+
+  .pipeline-trace {
+    right: 76px;
+    bottom: 17px;
+    max-width: calc(100vw - 100px);
   }
 
   .snapshot-summary,
