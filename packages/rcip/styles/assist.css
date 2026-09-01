@@ -92,7 +92,8 @@
 }
 
 .rcip-assist__launcher:hover .rcip-assist__launcher-hint,
-.rcip-assist__launcher:focus-within .rcip-assist__launcher-hint {
+.rcip-assist__launcher:focus-within .rcip-assist__launcher-hint,
+.rcip-assist__launcher-hint[data-visible='true'] {
   transform: translateY(0) scale(1);
   opacity: 1;
 }
@@ -719,7 +720,7 @@
     max-width: 92%;
   }
 
-  .rcip-assist__launcher-hint {
+  .rcip-assist__launcher-hint:not([data-visible='true']) {
     display: none;
   }
 }

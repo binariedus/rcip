@@ -62,6 +62,9 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
   const pipelineFixtureEnabled =
     new URLSearchParams(window.location.search).get('voicePipeline') ===
     'fixture'
+  const voiceDisabled =
+    new URLSearchParams(window.location.search).get('voicePipeline') ===
+    'disabled'
   const inputPipeline = useMemo<RcipAssistInputPipeline | undefined>(
     () =>
       pipelineFixtureEnabled
@@ -106,8 +109,10 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
               },
             ],
           }
-        : undefined,
-    [pipelineFixtureEnabled],
+        : voiceDisabled
+          ? { voice: false }
+          : undefined,
+    [pipelineFixtureEnabled, voiceDisabled],
   )
 
   const semanticContext = useMemo(
