@@ -15,11 +15,11 @@ The result is one application with parallel interfaces:
   confirmation, execution, and output.
 
 ```bash
-npm install @binaried/rcip@beta
+npm install @binaried/rcip
 ```
 
-RCIP 2 currently ships on the `beta` npm tag. It implements protocol `1.0`,
-supports React 18 and 19, and includes both ESM and CommonJS entry points.
+RCIP 2 implements protocol `1.0`, supports React 18 and 19, and includes both
+ESM and CommonJS entry points.
 
 ## The design in one minute
 
@@ -393,8 +393,9 @@ application's authentication, authorization, transaction, or audit systems.
 - Minor releases add backward-compatible APIs.
 - Incompatible public contract changes require a new major after stable.
 
-Published npm versions remain immutable. During beta evaluation, install the
-moving candidate with `@beta` or pin an exact prerelease in applications.
+Published npm versions remain immutable. Install the stable release from
+`latest`, or pin an exact version in applications that require deterministic
+dependency updates.
 
 ## License
 

@@ -2,6 +2,23 @@
 
 All notable RCIP changes are documented here. RCIP follows semantic versioning.
 
+## 2.0.0
+
+- Promoted the accepted `2.0.0-beta.5` release candidate to stable without
+  runtime or public API changes.
+- RCIP 2 provides protocol `1.0` semantic scopes and capabilities, a
+  framework-neutral runtime, React bindings, packaged Assist and Explorer
+  surfaces, confirmation and cancellation controls, consumer-owned input
+  pipelines, and React 18/19 compatibility.
+- This major is intentionally incompatible with RCIP 1.x. See
+  [the migration guide](docs/migration-v1-to-v2.md).
+
+## 2.0.0-beta.5
+
+- Changed disabled voice input so single click or Space reports that voice is
+  unavailable without opening chat or invoking a microphone or provider.
+- Kept double-click, long-press, and Enter as direct ways to open chat.
+
 ## 2.0.0-beta.4
 
 - Removed the in-chat example prompt section so Assist opens directly into a

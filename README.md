@@ -43,11 +43,10 @@ the validated client boundary.
 ## Install
 
 ```bash
-npm install @binaried/rcip@beta
+npm install @binaried/rcip
 ```
 
-RCIP 2 is currently available through the `beta` distribution tag. It
-implements protocol `1.0` and supports React 18 and React 19.
+RCIP 2 implements protocol `1.0` and supports React 18 and React 19.
 
 ## Package surfaces
 
