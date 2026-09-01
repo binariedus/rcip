@@ -27,6 +27,8 @@ const DEFAULT_PLACEHOLDER = 'Message Assist…'
 const VIEWPORT_INSET = 12
 const CLICK_DECISION_MS = 280
 const TOUCH_LONG_PRESS_MS = 560
+const VOICE_UNAVAILABLE_NOTICE_MS = 2_500
+const VOICE_UNAVAILABLE_MESSAGE = 'Voice input isn’t available right now'
 
 interface RcipAssistPosition {
   readonly left: number
@@ -182,6 +184,7 @@ export function RcipAssist({
   const [open, setOpen] = useState(defaultOpen)
   const [draft, setDraft] = useState('')
   const [position, setPosition] = useState<RcipAssistPosition | null>(null)
+  const [voiceUnavailableNotice, setVoiceUnavailableNotice] = useState(false)
   const panelRef = useRef<HTMLDivElement | null>(null)
   const dotRef = useRef<HTMLButtonElement | null>(null)
   const messagesRef = useRef<HTMLDivElement | null>(null)
@@ -189,6 +192,7 @@ export function RcipAssist({
   const composerRef = useRef<HTMLTextAreaElement | null>(null)
   const clickTimerRef = useRef<number | null>(null)
   const longPressTimerRef = useRef<number | null>(null)
+  const voiceUnavailableTimerRef = useRef<number | null>(null)
   const suppressClickRef = useRef(false)
   const previouslyOpenRef = useRef(open)
   const visualStatus = visualStatusFor(controller, open)
@@ -215,10 +219,26 @@ export function RcipAssist({
       window.clearTimeout(longPressTimerRef.current)
       longPressTimerRef.current = null
     }
+    if (voiceUnavailableTimerRef.current !== null) {
+      window.clearTimeout(voiceUnavailableTimerRef.current)
+      voiceUnavailableTimerRef.current = null
+    }
+  }, [])
+
+  const showVoiceUnavailable = useCallback(() => {
+    if (voiceUnavailableTimerRef.current !== null) {
+      window.clearTimeout(voiceUnavailableTimerRef.current)
+    }
+    setVoiceUnavailableNotice(true)
+    voiceUnavailableTimerRef.current = window.setTimeout(() => {
+      voiceUnavailableTimerRef.current = null
+      setVoiceUnavailableNotice(false)
+    }, VOICE_UNAVAILABLE_NOTICE_MS)
   }, [])
 
   const openPanel = useCallback(() => {
     clearInteractionTimers()
+    setVoiceUnavailableNotice(false)
     controller.cancelInput()
     setOpen(true)
   }, [clearInteractionTimers, controller])
@@ -233,7 +253,7 @@ export function RcipAssist({
 
   const toggleVoiceInput = useCallback(() => {
     if (!controller.voiceEnabled) {
-      openPanel()
+      showVoiceUnavailable()
       return
     }
     if (controller.inputStatus === 'listening') {
@@ -246,7 +266,7 @@ export function RcipAssist({
     ) {
       void controller.startVoiceInput()
     }
-  }, [controller, openPanel])
+  }, [controller, showVoiceUnavailable])
 
   useEffect(() => {
     if (open) composerRef.current?.focus()
@@ -408,6 +428,14 @@ export function RcipAssist({
     controller.inputStatus === 'listening'
       ? 'Stop voice input'
       : 'Start voice input'
+  const launcherHint = controller.voiceEnabled
+    ? 'Click to listen · Double-click to open'
+    : voiceUnavailableNotice
+      ? VOICE_UNAVAILABLE_MESSAGE
+      : 'Voice input unavailable · Double-click to open'
+  const launcherLabel = controller.voiceEnabled
+    ? `${title}. ${currentStatusLabel}. Press Space to start or stop voice input. Press Enter to open chat.`
+    : `${title}. ${currentStatusLabel}. Voice input unavailable. Press Enter to open chat.`
   const turnIsWorking =
     controller.status === 'working' && !controller.pendingConfirmation
 
@@ -599,15 +627,24 @@ export function RcipAssist({
         </div>
       ) : (
         <div className="rcip-assist__launcher">
-          <span className="rcip-assist__launcher-hint" role="tooltip">
-            Click to listen · Double-click to open
+          <span
+            className="rcip-assist__launcher-hint"
+            data-visible={voiceUnavailableNotice ? 'true' : 'false'}
+            role="tooltip"
+            aria-live="polite"
+          >
+            {launcherHint}
           </span>
           <button
             ref={dotRef}
             type="button"
             className="rcip-assist__dot"
-            aria-label={`${title}. ${currentStatusLabel}. Press Space to start or stop voice input. Press Enter to open chat.`}
-            aria-pressed={controller.inputStatus === 'listening'}
+            aria-label={launcherLabel}
+            aria-pressed={
+              controller.voiceEnabled
+                ? controller.inputStatus === 'listening'
+                : undefined
+            }
             onClick={dotClick}
             onDoubleClick={dotDoubleClick}
             onKeyDown={dotKeyDown}

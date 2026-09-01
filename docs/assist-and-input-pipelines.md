@@ -71,7 +71,9 @@ component closes, unmounts, or the user opens chat during capture.
 When no adapter is configured, Assist uses a simulation: start resolves
 immediately; stop shows processing for one second and returns `null`. It never
 uses `MediaRecorder` or requests microphone permission. Set `voice: false` to
-disable voice input entirely.
+disable voice input entirely. In the packaged launcher, a single click or Space
+then reports that voice input is unavailable without opening chat; double-click,
+touch long-press, and Enter continue to open chat.
 
 ## Example pipeline
 
@@ -127,11 +129,13 @@ capability turn; that turn continues while the collapsed dot displays status.
 
 ## Packaged interaction and accessibility
 
-- Pointer click/tap: start or stop voice input.
+- Pointer click/tap: start or stop voice input, or report that voice is
+  unavailable when `voice: false`.
 - Pointer double-click: open chat.
 - Touch long-press: open chat.
 - Keyboard Enter: open chat.
-- Keyboard Space: start or stop voice input.
+- Keyboard Space: start or stop voice input, or report that voice is
+  unavailable when `voice: false`.
 - Escape: close chat and restore the launcher to its configured anchor.
 
 The panel is non-modal, traps no focus, labels every icon control, announces

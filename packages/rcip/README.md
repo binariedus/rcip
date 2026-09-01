@@ -254,6 +254,9 @@ availability, host policy, and host-owned confirmation.
 
 The default voice source is a one-second visual simulation. It requests no
 permission, captures no audio, produces no text, and invokes no capability.
+Set `inputPipeline={{ voice: false }}` when no transcription provider is
+configured. A single click or Space then reports that voice is unavailable
+without opening chat; double-click, long-press, and Enter still open chat.
 
 ## Audio → transcript → refined request
 

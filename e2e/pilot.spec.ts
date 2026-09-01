@@ -140,6 +140,35 @@ test('keyboard controls expose chat and simulated voice without pointer gestures
   )
 })
 
+test('disabled voice reports unavailability without changing chat gestures', async ({
+  page,
+}) => {
+  await page.goto('/?voicePipeline=disabled')
+  const assist = page.locator('[data-rcip-assist]')
+  const dot = assist.locator('.rcip-assist__dot')
+
+  await dot.click()
+  await expect(assist.locator('.rcip-assist__launcher-hint')).toHaveText(
+    'Voice input isn’t available right now',
+  )
+  await expect(assist.locator('.rcip-assist__launcher-hint')).toHaveAttribute(
+    'data-visible',
+    'true',
+  )
+  await expect(page.getByRole('dialog', { name: 'RCIP Assist' })).toHaveCount(0)
+  await expect(assist).toHaveAttribute('data-rcip-assist-input-status', 'idle')
+
+  await dot.press('Space')
+  await expect(page.getByRole('dialog', { name: 'RCIP Assist' })).toHaveCount(0)
+  await expect(dot).toHaveAttribute('aria-label', /Voice input unavailable/)
+
+  await dot.dblclick()
+  await expect(page.getByRole('dialog', { name: 'RCIP Assist' })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Start voice input' }),
+  ).toHaveCount(0)
+})
+
 test('closing a dragged panel restores the launcher anchor', async ({ page }) => {
   await page.goto('/')
   const dot = page.locator('.rcip-assist__dot')
