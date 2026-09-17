@@ -171,13 +171,35 @@ function assertDefinition(definition: RcipApplicationDefinition): void {
   }
 }
 
+function compileSchema<Value extends RcipJsonValue>(
+  ajv: Ajv2020,
+  cache: Map<string, ValidateFunction>,
+  schema: RcipCapabilityDefinition["inputSchema"],
+): ValidateFunction<Value> {
+  const key = JSON.stringify(schema);
+  const cached = cache.get(key);
+  if (cached) return cached as ValidateFunction<Value>;
+  const validator = ajv.compile<Value>(schema);
+  cache.set(key, validator);
+  return validator;
+}
+
 function makeBinding<Input extends RcipJsonValue, Output extends RcipJsonValue>(
   ajv: Ajv2020,
+  cache: Map<string, ValidateFunction>,
   definition: RcipCapabilityDefinition<Input, Output>,
   binding: RcipCapabilityBinding<Input, Output>,
 ): InternalBinding {
-  const validateInput = ajv.compile<Input>(definition.inputSchema);
-  const validateOutput = ajv.compile<Output>(definition.outputSchema);
+  const validateInput = compileSchema<Input>(
+    ajv,
+    cache,
+    definition.inputSchema,
+  );
+  const validateOutput = compileSchema<Output>(
+    ajv,
+    cache,
+    definition.outputSchema,
+  );
 
   return {
     async execute(input, context) {
@@ -206,6 +228,7 @@ export function createRcipRuntime(
   definition = immutableCopy(definition);
 
   const ajv = new Ajv2020({ allErrors: true, strict: true });
+  const schemaCache = new Map<string, ValidateFunction>();
   const createId = options.createId ?? defaultCreateId;
   const confirmationTtlMs =
     options.confirmationTtlMs ?? DEFAULT_CONFIRMATION_TTL_MS;
@@ -214,7 +237,11 @@ export function createRcipRuntime(
   );
   for (const capability of definition.capabilities) {
     if (!capability.usage?.examples) continue;
-    const validateExample = ajv.compile<RcipJsonValue>(capability.inputSchema);
+    const validateExample = compileSchema<RcipJsonValue>(
+      ajv,
+      schemaCache,
+      capability.inputSchema,
+    );
     for (const example of capability.usage.examples) {
       if (!example.description.trim() || !validateExample(example.input)) {
         throw new Error(
@@ -813,6 +840,7 @@ export function createRcipRuntime(
       }
       const internalBinding = makeBinding(
         ajv,
+        schemaCache,
         {
           ...definitionToBind,
           inputSchema: catalogDefinition.inputSchema,
