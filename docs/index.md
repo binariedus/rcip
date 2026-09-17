@@ -1,11 +1,11 @@
 ---
 layout: home
-title: React capabilities for AI assistants and tools
-description: RCIP lets React apps expose typed capabilities without DOM scraping. Discover live context, validate inputs, enforce policy, and confirm actions in application code.
+title: React UI agents, AI assistants, and tool calling
+description: Add React tool calling and UI-agent capabilities with live application context, JSON Schema validation, policy, and human confirmation.
 hero:
   name: RCIP
-  text: Give tools the meaning of your application.
-  tagline: Typed capabilities for React apps and AI assistants. Your application controls discovery, policy, confirmation, and execution.
+  text: Give AI assistants the actions of your React app.
+  tagline: React capabilities for AI assistants, UI agents, and tool calling. Your application controls context, validation, policy, confirmation, and execution.
   actions:
     - theme: brand
       text: Get started
@@ -32,10 +32,23 @@ features:
 npm install @binaried/rcip
 ```
 
-RCIP 2.0.1 implements the in-process protocol 1.0. Its core is framework-neutral;
+RCIP 2.0.2 implements the in-process protocol 1.0. Its core is framework-neutral;
 React bindings support React 18 and 19. Optional Assist and Explorer have separate imports.
 
 Start with a single useful action, then share the same capability contract across
 human-facing application behavior and assistant integrations.
 
 [Understand the architecture](./semantic-capabilities) · [Read the Finance case study](./finance-case-study) · [Inspect the security boundary](./security)
+
+## React tool calling and browser agents
+
+Declare the application actions an assistant or UI agent can request, bind them
+to current React state, and route tool calls through the validated RCIP client.
+Your consumer supplies the model/provider or browser-agent integration.
+[Explore the architecture](./semantic-capabilities).
+
+## How RCIP relates to MCP and WebMCP
+
+RCIP shares the goal of exposing useful application tools. It currently runs
+in-process; **direct MCP and WebMCP adapters are planned and are not included**.
+[Compare the integration boundaries](./ecosystem).

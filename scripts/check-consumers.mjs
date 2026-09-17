@@ -8,15 +8,31 @@ import {
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { parseArgs } from 'node:util'
+
+const { values: options } = parseArgs({ options: {
+  'registry-version': { type: 'string' },
+  browser: { type: 'boolean', default: false },
+} })
+const registryVersion = options['registry-version']
+if (registryVersion && !/^\d+\.\d+\.\d+(?:-[\da-zA-Z.-]+)?$/.test(registryVersion)) {
+  throw new Error('--registry-version must be an exact version.')
+}
 
 const workspaceRoot = process.cwd()
 const temporaryRoot = mkdtempSync(join(tmpdir(), 'rcip-consumers-'))
+// One isolated npm cache per registry run, reused across the React consumers.
+const consumerEnv = registryVersion
+  ? { ...process.env, npm_config_cache: join(temporaryRoot, 'npm-cache'), npm_config_registry: 'https://registry.npmjs.org/' }
+  : process.env
 
 function run(command, args, cwd, capture = false) {
   const result = spawnSync(command, args, {
     cwd,
     encoding: 'utf8',
     stdio: capture ? 'pipe' : 'inherit',
+    env: consumerEnv,
+    timeout: 5 * 60_000,
   })
   if (result.status !== 0) {
     if (capture) {
@@ -32,7 +48,7 @@ function writeJson(path, value) {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`)
 }
 
-function createConsumer(versionName, reactVersion, reactTypesVersion, tarball) {
+async function createConsumer(versionName, reactVersion, reactTypesVersion, packageSpec, browser) {
   const fixtureRoot = join(temporaryRoot, versionName)
   const sourceRoot = join(fixtureRoot, 'src')
   mkdirSync(sourceRoot, { recursive: true })
@@ -45,7 +61,7 @@ function createConsumer(versionName, reactVersion, reactTypesVersion, tarball) {
       build: 'tsc --noEmit && vite build',
     },
     dependencies: {
-      '@binaried/rcip': `file:${tarball}`,
+      '@binaried/rcip': packageSpec,
       react: reactVersion,
       'react-dom': reactVersion,
     },
@@ -76,50 +92,7 @@ function createConsumer(versionName, reactVersion, reactTypesVersion, tarball) {
   )
   writeFileSync(
     join(sourceRoot, 'main.tsx'),
-    `import { createRoot } from 'react-dom/client'
-import {
-  RCIP_PROTOCOL_VERSION,
-  createRcipRuntime,
-  defineRcipApplication,
-} from '@binaried/rcip/core'
-import { RcipCapabilityExplorer } from '@binaried/rcip/explorer'
-import {
-  RcipAssist,
-  type RcipAssistDecide,
-} from '@binaried/rcip/assist'
-import '@binaried/rcip/explorer/styles.css'
-import '@binaried/rcip/assist/styles.css'
-
-if (RCIP_PROTOCOL_VERSION !== '1.0') throw new Error('Unexpected protocol.')
-
-const runtime = createRcipRuntime(
-  defineRcipApplication({
-    protocolVersion: RCIP_PROTOCOL_VERSION,
-    application: {
-      id: 'consumer.fixture',
-      name: 'Consumer fixture',
-      description: 'Packed package verification.',
-    },
-    scopes: [],
-    capabilities: [],
-  }),
-)
-const root = document.getElementById('root')
-if (!root) throw new Error('Missing root.')
-const decide: RcipAssistDecide = async (request) => ({
-  type: 'message',
-  message:
-    request.phase === 'summarize'
-      ? 'The action completed.'
-      : 'No actions are registered.',
-})
-createRoot(root).render(
-  <>
-    <RcipCapabilityExplorer client={runtime.client} />
-    <RcipAssist runtime={runtime} decide={decide} />
-  </>,
-)
-`,
+    readFileSync(new URL('./fixtures/consumer.tsx', import.meta.url), 'utf8'),
   )
 
   run(
@@ -127,6 +100,10 @@ createRoot(root).render(
     ['install', '--ignore-scripts', '--no-audit', '--no-fund'],
     fixtureRoot,
   )
+  if (registryVersion) {
+    const installed = JSON.parse(readFileSync(join(fixtureRoot, 'node_modules/@binaried/rcip/package.json'), 'utf8'))
+    if (installed.version !== registryVersion) throw new Error('Installed registry version does not match requested version.')
+  }
   run(
     'node',
     [
@@ -145,32 +122,34 @@ createRoot(root).render(
     fixtureRoot,
   )
   run('npm', ['run', 'build'], fixtureRoot)
+  if (browser) {
+    const { checkConsumerBrowser } = await import('./check-consumer-browser.mjs')
+    await checkConsumerBrowser(browser, fixtureRoot)
+    console.log(`PASS ${versionName}: composed browser checks`)
+  }
 }
 
+let browser
 try {
-  const packOutput = run(
-    'npm',
-    [
-      'pack',
-      '--workspace',
-      '@binaried/rcip',
-      '--pack-destination',
-      temporaryRoot,
-      '--json',
-    ],
-    workspaceRoot,
-    true,
-  )
-  const report = JSON.parse(packOutput)[0]
-  const tarball = join(temporaryRoot, report.filename)
-  if (readFileSync(tarball).byteLength === 0) {
-    throw new Error('Packed RCIP tarball is empty.')
+  if (options.browser) {
+    const { chromium } = await import('@playwright/test')
+    browser = await chromium.launch({ headless: true })
   }
-
-  createConsumer('react-18-minimum', '18.2.0', '^18.3.0', tarball)
-  createConsumer('react-18', '18.3.1', '^18.3.0', tarball)
-  createConsumer('react-19', '19.1.1', '^19.1.0', tarball)
-  process.stdout.write('Packed RCIP consumers passed for React 18 and 19.\n')
+  let packageSpec = registryVersion
+  if (!packageSpec) {
+    const packOutput = run('npm', [
+      'pack', '--workspace', '@binaried/rcip', '--pack-destination', temporaryRoot, '--json',
+    ], workspaceRoot, true)
+    const report = JSON.parse(packOutput)[0]
+    const tarball = join(temporaryRoot, report.filename)
+    if (readFileSync(tarball).byteLength === 0) throw new Error('Packed RCIP tarball is empty.')
+    packageSpec = `file:${tarball}`
+  }
+  await createConsumer('react-18-minimum', '18.2.0', '^18.3.0', packageSpec, browser)
+  await createConsumer('react-18', '18.3.1', '^18.3.0', packageSpec, browser)
+  await createConsumer('react-19', '19.1.1', '^19.1.0', packageSpec, browser)
+  console.log(`${registryVersion ? 'Registry' : 'Packed'} RCIP consumers passed for React 18 and 19.`)
 } finally {
+  await browser?.close()
   rmSync(temporaryRoot, { recursive: true, force: true })
 }

@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 const origin = 'https://binariedus.github.io'
 const home = `${origin}/rcip/`
 const description =
-  'Expose typed React application capabilities to AI assistants and tools, with contextual discovery, validation, policy, and confirmation.'
+  'React capabilities for AI assistants, UI agents, and tool calling—with live context, validation, policy, and confirmation.'
 export default defineConfig({
   title: 'RCIP',
   description,
@@ -48,7 +48,7 @@ export default defineConfig({
           codeRepository: 'https://github.com/binariedus/rcip',
           programmingLanguage: 'TypeScript',
           license: 'https://www.apache.org/licenses/LICENSE-2.0',
-          version: '2.0.1',
+          version: '2.0.2',
           runtimePlatform: 'React',
         }),
       ],
@@ -101,6 +101,7 @@ export default defineConfig({
           { text: 'Migration from v1', link: '/migration-v1-to-v2' },
           { text: 'Changelog', link: '/changelog' },
           { text: 'Release process', link: '/releasing' },
+          { text: 'Public health checks', link: '/health-monitoring' },
         ],
       },
     ],

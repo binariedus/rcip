@@ -12,6 +12,8 @@ permissions:
 jobs:
   publish:
     name: Publish to npm
+    outputs:
+      version: ${{ steps.distribution.outputs.version }}
     runs-on: ubuntu-latest
     environment: npm
     steps:
@@ -38,6 +40,7 @@ jobs:
         id: distribution
         run: |
           version="$(node -p "require('./packages/rcip/package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
           if [[ "$version" == *-* ]]; then
             echo "tag=beta" >> "$GITHUB_OUTPUT"
           else
@@ -45,3 +48,11 @@ jobs:
           fi
       - name: Publish package
         run: npm publish --workspace @binaried/rcip --access public --tag "${{ steps.distribution.outputs.tag }}"
+  verify-published:
+    needs: publish
+    permissions:
+      contents: read
+    uses: ./.github/workflows/public-health.yml
+    with:
+      version: ${{ needs.publish.outputs.version }}
+      wait-seconds: 600

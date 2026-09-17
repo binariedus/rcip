@@ -2,6 +2,14 @@
 
 All notable RCIP changes are documented here. RCIP follows semantic versioning.
 
+## 2.0.2
+
+- Expand React UI-agent and tool-calling discovery metadata, use cases, and MCP/WebMCP positioning while making adapter boundaries explicit.
+- Add shared local and GitHub Actions commands for registry availability and fresh published-package regression across React 18.2, 18.3, and 19.1.
+- Verify the exact registry version after each publish, including browser behavior and live documentation/demo checks.
+- Add an explicitly bounded seven-day availability schedule with daily regression, automatic expiry, and no persistent Actions caches or artifact uploads.
+- Keep runtime behavior, public APIs, and protocol 1.0 unchanged.
+
 ## 2.0.1
 
 - Prevent duplicate invocation IDs during asynchronous policy and pending confirmation.

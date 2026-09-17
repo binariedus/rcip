@@ -2,10 +2,11 @@
 
 **React Capability Interface Protocol**
 
-RCIP lets React applications expose typed capabilities to AI assistants and other
-tools without DOM scraping. Your application controls contextual discovery,
-input/output validation, availability, policy, confirmation, and execution.
-The core is framework-neutral; React bindings connect contracts to live behavior.
+RCIP exposes typed React application capabilities to AI assistants, UI agents,
+and tools. Your application controls live context, input/output validation,
+availability, policy, confirmation, and execution. Consumers invoke declared
+actions without DOM scraping. The core is framework-neutral; React bindings
+connect contracts to live behavior.
 
 [![npm](https://img.shields.io/npm/v/@binaried/rcip)](https://www.npmjs.com/package/@binaried/rcip)
 [![CI](https://github.com/binariedus/rcip/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/binariedus/rcip/actions/workflows/ci.yml)
@@ -20,6 +21,36 @@ The core is framework-neutral; React bindings connect contracts to live behavior
 Optional Assist and Explorer provide a ready-made conversation UI and read-only
 capability inspector. No model service, credentials, or remote transport is bundled.
 The hosted demo uses a clearly labeled deterministic adapter and needs no account.
+
+## React UI agents and tool calling
+
+| What you are building | How RCIP helps |
+| --- | --- |
+| A React AI assistant or UI agent | Discover the capabilities and application context the host chooses to expose. |
+| React tool calling or function calling | Map a consumer's tool request to `client.invoke`; validate its input and run existing application behavior. |
+| Browser agents interacting with a React app | Use semantic actions with live availability, application policy, and human confirmation. Your integration connects the agent to the RCIP client. |
+| An application tool registry | Share typed capability contracts across assistants, command palettes, and other consumers. |
+
+A model/provider adapter remains application-owned. RCIP does not automatically
+connect an arbitrary browser agent or generate application actions from the DOM.
+See [React agents and semantic capabilities](https://binariedus.github.io/rcip/semantic-capabilities.html).
+
+## React, MCP, and WebMCP
+
+RCIP addresses application-tooling problems also explored by the Model Context
+Protocol (MCP) and WebMCP. It provides an in-process capability runtime with React
+bindings. **Direct MCP and WebMCP adapters are planned and are not included in
+this release.** An existing MCP or WebMCP client needs an integration to invoke RCIP.
+
+[Compare RCIP, MCP, WebMCP, AG-UI, and A2UI](https://binariedus.github.io/rcip/ecosystem.html).
+
+## An application integration
+
+HiNivaas uses RCIP to expose bounded current-view facts and authorized Finance
+navigation. The [Finance case study](https://binariedus.github.io/rcip/finance-case-study.html)
+explains those contracts and their limits. Try the independent
+[interactive demo](https://binariedus.github.io/rcip/demo/) to explore discovery,
+invocation, layout changes, and host confirmation.
 
 ## Why RCIP
 
@@ -305,6 +336,7 @@ npm audit
 - [Tool author guide](https://binariedus.github.io/rcip/tool-author-guide.html)
 - [Assist and input pipelines](https://binariedus.github.io/rcip/assist-and-input-pipelines.html)
 - [Migrating from v1](https://binariedus.github.io/rcip/migration-v1-to-v2.html)
+- [Published-package health checks](https://binariedus.github.io/rcip/health-monitoring.html)
 - [Release runbook](https://binariedus.github.io/rcip/releasing.html)
 - [Contributing](https://github.com/binariedus/rcip/blob/main/CONTRIBUTING.md)
 - [Security reporting](https://github.com/binariedus/rcip/blob/main/SECURITY.md)

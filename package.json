@@ -1,7 +1,7 @@
 {
   "name": "rcip-workspace",
   "private": true,
-  "version": "2.0.1",
+  "version": "2.0.2",
   "packageManager": "npm@11.16.0",
   "type": "module",
   "workspaces": [
@@ -26,7 +26,9 @@
     "docs:preview": "vitepress preview docs --host 127.0.0.1 --port 4186",
     "site:build": "node scripts/build-site.mjs",
     "measure:bundles": "npm run build:lib && node scripts/measure-bundles.mjs",
-    "test:site": "playwright test --config playwright.site.config.ts"
+    "test:site": "playwright test --config playwright.site.config.ts",
+    "health:availability": "node scripts/health-availability.mjs",
+    "health:regression": "node scripts/health-regression.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",

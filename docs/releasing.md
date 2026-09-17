@@ -117,7 +117,14 @@ iteration must use a new version such as `2.0.0-beta.1`.
 10. Install the registry package into a fresh application and repeat one
     minimal discovery/render check.
 
-The current maintenance release is `2.0.1`, retaining protocol `1.0` and public
+The release workflow now performs this registry acceptance automatically with
+`npm run health:regression -- --version <released-version> --wait-seconds 600`.
+Package upload and acceptance are separate steps: if acceptance fails after a
+successful upload, investigate the published version before retrying anything.
+Do not republish an immutable version. Repeat the exact-version regression using
+the manual public-health workflow after resolving the failure.
+
+The current maintenance release is `2.0.2`, retaining protocol `1.0` and public
 API compatibility. Use the next unused patch version if it is already published.
 Publish only after packed-consumer and composed browser checks pass.
 
@@ -164,3 +171,6 @@ the static demo.
 CI scans Git history using the open-source Gitleaks CLI, downloaded at a pinned
 version and verified against its SHA-256 checksum. This preserves scanning without
 the license requirement of the organization-oriented wrapper action.
+
+See [public health monitoring](./health-monitoring) for local commands, temporary
+availability monitoring, automatic expiry, cost controls, and failure reporting.

@@ -1,7 +1,7 @@
 {
   "name": "@binaried/rcip",
-  "version": "2.0.1",
-  "description": "Typed capabilities for React apps and AI assistants, with contextual discovery, validation, policy, and confirmation—without DOM scraping.",
+  "version": "2.0.2",
+  "description": "React capabilities for AI assistants, UI agents, and tool calling—with live context, validation, policy, and confirmation.",
   "license": "Apache-2.0",
   "keywords": [
     "react",
@@ -17,7 +17,27 @@
     "human-in-the-loop",
     "json-schema",
     "react-18",
-    "react-19"
+    "react-19",
+    "react-agent",
+    "react-ai-agent",
+    "react-ui-agent",
+    "react-assistant",
+    "react-tool-calling",
+    "react-function-calling",
+    "ui-agent",
+    "ui-agents",
+    "browser-agent",
+    "ai-assistant",
+    "agent-tools",
+    "function-calling",
+    "ui-tool-calling",
+    "tool-registry",
+    "ui-capabilities",
+    "semantic-actions",
+    "application-context",
+    "webmcp",
+    "mcp",
+    "model-context-protocol"
   ],
   "repository": {
     "type": "git",
