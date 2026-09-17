@@ -1,0 +1,28 @@
+# RCIP — React Capability Interface Protocol
+
+> Typed application capabilities for React AI assistants, UI agents, frontend tools, and browser-use integrations. Applications own live context, validation, availability, policy, confirmation, and execution.
+
+RCIP implements in-process protocol 1.0 with a framework-neutral core and React 18/19 bindings. Consumers receive RcipClient for discovery and invocation; the application retains host controls. MCP/WebMCP adapters and generic browser discovery are future work. The hosted demo is deterministic and requires no account, provider, or backend. Confirmation is a cooperative application boundary, not a sandbox against browser automation or arbitrary same-page JavaScript.
+
+## Get started
+
+- [Quick start](https://binariedus.github.io/rcip/quick-start.html): Install @binaried/rcip and bind a live React capability.
+- [React starter](https://binariedus.github.io/rcip/react-starter.html): Standalone project with discovery, reads, writes, approval, and cancellation.
+- [Interactive demo](https://binariedus.github.io/rcip/demo/): Try the reference UI without credentials.
+- [Source and releases](https://github.com/binariedus/rcip): Apache-2.0 source, validation, and release downloads.
+
+## Integrate
+
+- [Consumer guide](https://binariedus.github.io/rcip/tool-author-guide.html): Discover, subscribe, invoke, and handle structured outcomes.
+- [API reference](https://binariedus.github.io/rcip/api.html): Package entrypoints and public API.
+- [Type contracts](https://binariedus.github.io/rcip/api-types.html): Generated public TypeScript declarations.
+- [Lifecycle](https://binariedus.github.io/rcip/lifecycle.html): Binding ownership, snapshots, cancellation, confirmation, and SSR.
+- [Security](https://binariedus.github.io/rcip/security.html): Trust boundaries, server authorization, and data minimization.
+- [Protocol 1.0](https://binariedus.github.io/rcip/protocol.html): Normative in-process contract.
+
+## Evaluate
+
+- [Architecture and browser use](https://binariedus.github.io/rcip/semantic-capabilities.html): Semantic application actions and browser-agent integration.
+- [Ecosystem](https://binariedus.github.io/rcip/ecosystem.html): RCIP, MCP, WebMCP, AG-UI, and A2UI boundaries.
+- [Finance case study](https://binariedus.github.io/rcip/finance-case-study.html): A bounded application integration and its limits.
+- [Compatibility](https://binariedus.github.io/rcip/compatibility.html): Supported versions, package sizes, and validation evidence.

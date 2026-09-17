@@ -48,7 +48,7 @@ export default defineConfig({
           codeRepository: 'https://github.com/binariedus/rcip',
           programmingLanguage: 'TypeScript',
           license: 'https://www.apache.org/licenses/LICENSE-2.0',
-          version: '2.0.2',
+          version: '2.0.3',
           runtimePlatform: 'React',
         }),
       ],
@@ -70,6 +70,7 @@ export default defineConfig({
         text: 'Start here',
         items: [
           { text: 'Quick start', link: '/quick-start' },
+          { text: 'Standalone React starter', link: '/react-starter' },
           { text: 'Interactive demo', link: '/demo/', target: '_self' },
           {
             text: 'Why semantic capabilities?',

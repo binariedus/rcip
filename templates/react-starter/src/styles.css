@@ -1,0 +1,16 @@
+:root { color: #14283f; background: #f3f6fa; font: 17px/1.6 system-ui, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 880px; margin: auto; padding: 40px 24px; }
+h1 { font-size: clamp(1.8rem, 5vw, 3rem); line-height: 1.15; }
+h2 { font-size: 1.15rem; }
+.eyebrow { font-weight: 700; color: #196354; }
+.count { font-size: 2.2rem; font-weight: 700; margin: 24px 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+button { font: inherit; color: white; background: #164d66; border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer; }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, a:focus-visible { outline: 3px solid #d67b00; outline-offset: 4px; }
+.confirmation { margin-top: 24px; padding: 16px 20px; background: #fff3d8; border: 1px solid #d5a448; border-radius: 12px; }
+pre { max-height: 350px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 20px; background: white; border: 1px solid #cbd5e1; border-radius: 12px; font-size: .85rem; }
+.note { color: #4c6075; font-size: .9rem; }
+a { color: #145b78; }

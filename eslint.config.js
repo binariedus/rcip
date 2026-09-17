@@ -27,7 +27,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['examples/pilot-web/src/**/*.{ts,tsx}'],
+    files: ['examples/pilot-web/src/**/*.{ts,tsx}', 'templates/react-starter/src/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },
   },
   {

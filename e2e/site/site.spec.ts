@@ -17,6 +17,7 @@ test('documentation is searchable, crawlable, and linked', async ({
     'ecosystem.html',
     'changelog.html',
     'health-monitoring.html',
+    'react-starter.html',
   ]) {
     const response = await request.get(`/rcip/${path}`)
     expect(response.ok(), path).toBe(true)
@@ -33,6 +34,9 @@ test('documentation is searchable, crawlable, and linked', async ({
   )
   const image = await request.get('/rcip/social-card.png')
   expect(image.ok()).toBe(true)
+  const llms = await request.get('/rcip/llms.txt')
+  expect(llms.ok()).toBe(true)
+  expect(await llms.text()).toContain('https://binariedus.github.io/rcip/react-starter.html')
   await page.goto('/rcip/')
   await expect(
     page.getByRole('heading', { name: /^React Capability Interface Protocol/ }),
