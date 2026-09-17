@@ -281,7 +281,7 @@ consumer theming.
 ## Run the reference pilot
 
 ```bash
-npm ci
+npx --yes npm@11.16.0 ci
 RCIP_PILOT_PORT=4176 npm run dev
 ```
 

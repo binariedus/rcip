@@ -31,7 +31,7 @@ together: shared dependencies may be deduplicated by your application bundler.
 ## Reproduce validation
 
 ```sh
-npm ci
+npx --yes npm@11.16.0 ci
 npm run check
 npm run test:e2e
 npm run site:build

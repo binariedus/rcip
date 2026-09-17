@@ -7,7 +7,7 @@ Thank you for helping improve the React Capability Interface Protocol.
 Use Node.js 22 or 24.
 
 ```bash
-npm ci
+npx --yes npm@11.16.0 ci
 npm run check
 npm run test:e2e
 ```

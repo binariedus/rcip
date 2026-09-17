@@ -1,6 +1,8 @@
 # Releasing RCIP
 
-RCIP uses a guarded GitHub Actions release with npm trusted publishing. A
+RCIP uses a guarded GitHub Actions release with npm trusted publishing.
+CI and release jobs install the pinned npm 11.16.0 toolchain before reading the
+lockfile; older npm versions resolve optional peers differently. A
 release tag starts validation. Existing GitHub environment protections apply;
 complete any configured maintainer gate without disabling it.
 
