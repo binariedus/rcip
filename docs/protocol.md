@@ -1,3 +1,7 @@
+---
+title: Protocol 1.0 specification
+description: RCIP discovery, context, invocation, confirmation, outcomes, and compatibility rules for the in-process application capability protocol.
+---
 # RCIP protocol 1.0
 
 RCIP exposes a static semantic catalog and a live application snapshot. The

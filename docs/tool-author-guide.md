@@ -1,3 +1,7 @@
+---
+title: Build a tool with RcipClient
+description: Discover application capabilities and invoke them through the RCIP client while preserving host policy, confirmation, cancellation, and error handling.
+---
 # Authoring RCIP consumer tools
 
 An RCIP tool is consumer-owned code that receives `RcipClient`. Protocol 1.0

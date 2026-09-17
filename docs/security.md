@@ -1,3 +1,7 @@
+---
+title: Security and trust model
+description: Understand RCIP application authority, untrusted tool input, confirmation, provider privacy, error redaction, and server authorization responsibilities.
+---
 # Security policy and trust model
 
 RCIP is a mediation boundary, not a replacement for application authorization.

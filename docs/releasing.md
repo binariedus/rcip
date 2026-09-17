@@ -1,3 +1,7 @@
+---
+title: Release and publication process
+description: Validate and publish RCIP with a pinned toolchain, npm trusted publishing, provenance verification, and GitHub Pages acceptance checks.
+---
 # Releasing RCIP
 
 RCIP uses a guarded GitHub Actions release with npm trusted publishing.
