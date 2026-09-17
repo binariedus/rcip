@@ -13,6 +13,7 @@ export default defineConfig({
   head: [
     ['link', { rel: 'icon', href: '/rcip/favicon.svg', type: 'image/svg+xml' }],
     ['meta', { name: 'theme-color', content: '#14283f' }],
+    ['meta', { name: 'google-site-verification', content: 't89Khi8ugeWwOATk9fJC1eX1xatcpUS2ykqtFd6LI8M' }],
   ],
   transformHead({ pageData }) {
     const path = pageData.relativePath

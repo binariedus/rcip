@@ -13,6 +13,11 @@ discovery and onboarding, without runtime API changes.
 
 Use Node 24 and npm 11.16.0:
 
+Download the [source-only starter ZIP](https://github.com/binariedus/rcip/releases/download/v2.0.3/rcip-react-starter-2.0.3.zip),
+extract it, then run `npm ci` and `npm run dev` inside `rcip-react-starter`.
+The archive includes the lockfile and license, without dependencies or build outputs.
+Alternatively, clone the repository:
+
 ```bash
 git clone https://github.com/binariedus/rcip.git
 cd rcip/templates/react-starter
@@ -51,5 +56,21 @@ The starter allows one request at a time. Cancelling while confirmation is pendi
 aborts the request before execution. Cancellation of a handler that has already
 performed a side effect is a separate concern; see [lifecycle semantics](./lifecycle).
 An approval button is ordinary page UI and does not prove a human activated it.
+
+## Watch the application flow
+
+This 71-second recording shows the larger reference demo: normal UI changes,
+capability discovery and invocation, an approved write, a declined delete, and a
+layout change. It is a local production build at original interaction speed with
+explanatory captions and a deterministic adapter; no AI service is connected.
+
+<video controls playsinline preload="none" aria-label="RCIP application capabilities walkthrough with embedded captions" style="width: 100%; border-radius: 12px;">
+  <source src="https://github.com/binariedus/rcip/releases/download/v2.0.3/rcip-2.0.3-walkthrough.mp4" type="video/mp4" />
+  Your browser does not support embedded video. Use the download below.
+</video>
+
+[Download the captioned video](https://github.com/binariedus/rcip/releases/download/v2.0.3/rcip-2.0.3-walkthrough.mp4)
+· [WebVTT captions/transcript](https://github.com/binariedus/rcip/releases/download/v2.0.3/rcip-2.0.3-walkthrough.vtt)
+· [Download checksums](https://github.com/binariedus/rcip/releases/download/v2.0.3/SHA256SUMS.txt)
 
 <a href="/rcip/demo/" target="_self">Try the larger interactive demo</a> · [Read the source](https://github.com/binariedus/rcip/tree/main/templates/react-starter)
