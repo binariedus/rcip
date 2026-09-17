@@ -1,3 +1,7 @@
+---
+title: Protocol 1.0 specification
+description: RCIP discovery, context, invocation, confirmation, outcomes, and compatibility rules for the in-process application capability protocol.
+---
 # RCIP protocol 1.0
 
 RCIP exposes a static semantic catalog and a live application snapshot. The
@@ -13,7 +17,7 @@ implements protocol `1.0`.
 capabilities. Every capability contains:
 
 - a stable identifier and human-readable description;
-- one or more semantic scopes;
+- zero or more semantic scopes (an empty list is globally relevant);
 - an effect: `read`, `write`, `external`, or `destructive`;
 - strict JSON-compatible input and output schemas;
 - optional discovery tags;
@@ -102,6 +106,12 @@ For each invocation, the runtime:
 Outcomes are `succeeded`, `confirmation_required`, `failed`, or `denied`.
 Expected failures use stable codes. Unexpected implementation details and stack
 traces never cross the client boundary.
+
+Invocation IDs remain reserved across policy evaluation and pending confirmation.
+Requests and discovery metadata are detached from caller-owned mutable data.
+Changed bindings or semantic context invalidate pending approval or policy;
+confirmation expiry/cancellation releases retained payloads. See
+[lifecycle semantics](./lifecycle.md) for cancellation, SSR, and retry limits.
 
 The runtime performs no automatic retries. Capability contracts must state any
 idempotency guarantee required by a consumer.

@@ -1,3 +1,7 @@
+---
+title: Migrate from RCIP 1 to RCIP 2
+description: Move from component and action registration to stable semantic capability definitions, live bindings, and protocol 1.0.
+---
 # Migrating from RCIP v1 to v2
 
 RCIP 2 is a replacement, not a source-compatible upgrade. Version 1 described

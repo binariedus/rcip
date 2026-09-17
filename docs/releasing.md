@@ -1,8 +1,14 @@
+---
+title: Release and publication process
+description: Validate and publish RCIP with a pinned toolchain, npm trusted publishing, provenance verification, and GitHub Pages acceptance checks.
+---
 # Releasing RCIP
 
-RCIP uses a guarded GitHub Actions release with npm trusted publishing. A
-release tag starts validation, but the `npm` GitHub environment should require
-a maintainer approval before the publish step can proceed.
+RCIP uses a guarded GitHub Actions release with npm trusted publishing.
+CI and release jobs install the pinned npm 11.16.0 toolchain before reading the
+lockfile; older npm versions resolve optional peers differently. A
+release tag starts validation. Existing GitHub environment protections apply;
+complete any configured maintainer gate without disabling it.
 
 Package readiness does not authorize any of the external actions in this
 runbook. Changing repository visibility, configuring npm, merging, tagging,
@@ -14,9 +20,8 @@ and publishing each require an explicit release decision.
    the npm maintainer `bprac` can manage `@binaried/rcip`.
 2. Review the complete Git history for credentials and private material before
    publishing any package version.
-3. The GitHub repository may remain private during beta evaluation. npm
-   trusted publishing works with private repositories, but npm provenance is
-   available only after the repository is public.
+3. Keep this repository public for npm provenance. Verify the attestation on
+   the new published version; older releases are not retroactively attested.
 4. Create a GitHub environment named `npm`. Add a required reviewer and prevent
    self-review when the account setup allows it.
 5. In the npm package settings for `@binaried/rcip`, add a GitHub Actions
@@ -36,8 +41,7 @@ and publishing each require an explicit release decision.
 
 The workflow installs npm 11 because trusted publishing currently requires npm
 11.5.1 or later and Node.js 22.14.0 or later. No local npm login is required
-for the automated release. A later move to a public repository enables npm
-provenance for subsequent releases.
+for the automated release. The public repository enables npm provenance for qualifying trusted publishes.
 
 Official references:
 
@@ -113,13 +117,32 @@ iteration must use a new version such as `2.0.0-beta.1`.
 10. Install the registry package into a fresh application and repeat one
     minimal discovery/render check.
 
-Version `2.0.0` intentionally moves the `latest` tag from v1 to v2. Existing
-v1 versions remain installable by exact version. Do not push the stable tag
-until QA has approved the beta against packed-package standalone and real
-consumer integration checks.
+The current maintenance release is `2.0.1`, retaining protocol `1.0` and public
+API compatibility. Use the next unused patch version if it is already published.
+Publish only after packed-consumer and composed browser checks pass.
 
 ## If a release is bad
 
 Published versions are immutable. Prefer a prompt fixed patch and deprecate the
 bad version with a clear message. Do not move or recreate a Git tag, overwrite
 a published version, or rely on npm unpublish as a normal rollback mechanism.
+
+## Documentation and discovery
+
+`npm run site:build` generates the API contracts, bundle measurements, VitePress
+documentation, and deterministic static demo. `npm run test:site` verifies the
+production output. Generated pages and build outputs remain ignored.
+
+The Pages workflow publishes release tags (or an explicit manual dispatch) through
+GitHub Actions to https://binariedus.github.io/rcip/. Enable Pages with the Actions
+build source once. After publishing, verify direct document URLs, search, sitemap,
+social metadata, and demo confirmation behavior on the public origin.
+
+Keep npm/GitHub descriptions, keywords/topics, homepage, README links, and release
+notes consistent. Indexing and search rankings are external outcomes; do not claim
+they are guaranteed. No credentials, provider calls, or analytics are required by
+the static demo.
+
+CI scans Git history using the open-source Gitleaks CLI, downloaded at a pinned
+version and verified against its SHA-256 checksum. This preserves scanning without
+the license requirement of the organization-oriented wrapper action.

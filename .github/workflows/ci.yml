@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - 'release/**'
 
 permissions:
   contents: read
@@ -21,6 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         node:
+          - '20'
           - '22'
           - '24'
     steps:
@@ -29,6 +31,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
+      - name: Use the pinned npm toolchain
+        run: npm install --global npm@11.16.0
       - run: npm ci
       - run: npm run check
       - run: npm audit --audit-level=high
@@ -42,6 +46,8 @@ jobs:
         with:
           node-version: '24'
           cache: npm
+      - name: Use the pinned npm toolchain
+        run: npm install --global npm@11.16.0
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
@@ -53,6 +59,23 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: node scripts/scan-secrets.mjs
+
+  website:
+    name: Documentation and static demo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Use the pinned npm toolchain
+        run: npm install --global npm@11.16.0
+      - run: npm ci
+      - run: npm run site:build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:site

@@ -884,3 +884,32 @@ pre {
     justify-content: flex-end;
   }
 }
+
+.demo-note {
+  padding: 1.25rem;
+  border: 1px solid #bacbe1;
+  border-radius: 1rem;
+  margin: 1rem 0;
+  background: #edf4ff;
+  color: #172a43;
+}
+.demo-note p,
+.layout-explanation {
+  max-width: 80ch;
+  line-height: 1.6;
+}
+.layout-toggle {
+  margin-top: 1rem;
+}
+.layout-explanation {
+  color: #526176;
+  font-size: 0.9rem;
+}
+@media (min-width: 1000px) {
+  .alternate-layout .application-panel {
+    order: 2;
+  }
+  .alternate-layout .tool-panel {
+    order: 1;
+  }
+}

@@ -1,3 +1,7 @@
+---
+title: RCIP design principles
+description: The design principles behind app-owned semantic capabilities and parallel human and tool interfaces.
+---
 # RCIP vision
 
 AI delegates and other tools should interact with the meaning of an application,

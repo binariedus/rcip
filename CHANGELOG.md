@@ -2,6 +2,16 @@
 
 All notable RCIP changes are documented here. RCIP follows semantic versioning.
 
+## 2.0.1
+
+- Prevent duplicate invocation IDs during asynchronous policy and pending confirmation.
+- Reject binding, availability, and context changes before execution; capture confirmation input independently of caller mutation.
+- Release expired/cancelled confirmations and protect catalog/snapshot metadata from mutation.
+- Update React bindings only after committed renders and document cancellation, retry, schema, SSR, and lifecycle guarantees.
+- Rename the expansion to React Capability Interface Protocol without changing package/API names or protocol 1.0.
+- Publish searchable documentation, API contracts, measured entrypoints, a Finance case study, and a browser-only interactive demo.
+- Add concurrency, confirmation, lifecycle, SSR/hydration, and static-site browser verification; repair secret-history scanning and patch build dependencies.
+
 ## 2.0.0
 
 - Promoted the accepted `2.0.0-beta.5` release candidate to stable without

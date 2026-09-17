@@ -1,3 +1,4 @@
+import { DeterministicPilotAdapter } from './deterministic-adapter'
 import type {
   RcipAssistDecide,
   RcipAssistRequest,
@@ -8,6 +9,9 @@ export const pilotAssistDecide: RcipAssistDecide = async (
   request: RcipAssistRequest,
   { signal },
 ): Promise<RcipAssistResponse> => {
+  if (import.meta.env.VITE_RCIP_STATIC_DEMO === 'true') {
+    return new DeterministicPilotAdapter().decide(request, { signal })
+  }
   const response = await fetch('/api/agent/decide', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -5,6 +5,7 @@ const serverCommand = process.env.RCIP_E2E_SERVER_COMMAND ?? 'npm run dev'
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: '**/site/**',
   fullyParallel: false,
   retries: 0,
   reporter: 'list',

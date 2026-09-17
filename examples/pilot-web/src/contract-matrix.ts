@@ -1,3 +1,4 @@
+import { runSafetyScenarios } from "./safety-scenarios";
 import {
   RCIP_PROTOCOL_VERSION,
   createRcipRuntime,
@@ -338,5 +339,5 @@ export async function runContractMatrix(): Promise<
     );
   }
 
-  return checks;
+  return [...checks, ...await runSafetyScenarios()];
 }

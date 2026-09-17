@@ -1,3 +1,7 @@
+---
+title: Security and trust model
+description: Understand RCIP application authority, untrusted tool input, confirmation, provider privacy, error redaction, and server authorization responsibilities.
+---
 # Security policy and trust model
 
 RCIP is a mediation boundary, not a replacement for application authorization.
@@ -59,5 +63,12 @@ Callback exceptions are isolated from otherwise valid application behavior.
 ## Reporting vulnerabilities
 
 Follow the private reporting instructions in the repository
-[SECURITY.md](../SECURITY.md). Do not disclose a suspected vulnerability in a
+[SECURITY.md](https://github.com/binariedus/rcip/blob/main/SECURITY.md). Do not disclose a suspected vulnerability in a
 public issue before maintainers have reviewed it.
+
+## Cooperative boundary
+
+The client/host split is not a sandbox against arbitrary JavaScript in the same
+page. Availability and effect labels do not replace server authorization.
+Confirmation captures its request and expires; callback cancellation cannot undo
+a completed effect. See [lifecycle details](./lifecycle.md).

@@ -30,3 +30,9 @@ test-results
 .env
 rcip-*.tgz
 *.tgz
+
+# Generated documentation
+docs/.vitepress/cache
+docs/generated
+docs/api-types.md
+docs/changelog.md

@@ -53,7 +53,7 @@ function createConsumer(versionName, reactVersion, reactTypesVersion, tarball) {
       '@types/react': reactTypesVersion,
       '@types/react-dom': reactTypesVersion,
       typescript: '~5.8.3',
-      vite: '^6.3.5',
+      vite: '^6.4.3',
     },
   })
   writeJson(join(fixtureRoot, 'tsconfig.json'), {
@@ -167,6 +167,7 @@ try {
     throw new Error('Packed RCIP tarball is empty.')
   }
 
+  createConsumer('react-18-minimum', '18.2.0', '^18.3.0', tarball)
   createConsumer('react-18', '18.3.1', '^18.3.0', tarball)
   createConsumer('react-19', '19.1.1', '^19.1.0', tarball)
   process.stdout.write('Packed RCIP consumers passed for React 18 and 19.\n')

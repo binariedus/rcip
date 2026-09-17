@@ -1,0 +1,22 @@
+:root {
+  --vp-c-brand-1: #215caa;
+  --vp-c-brand-2: #2870c4;
+  --vp-c-brand-3: #215caa;
+  --vp-home-hero-name-color: #215caa;
+}
+.dark {
+  --vp-c-brand-1: #8abbff;
+  --vp-c-brand-2: #a9ccff;
+  --vp-c-brand-3: #2863a8;
+  --vp-home-hero-name-color: #8abbff;
+}
+.VPHero .text {
+  max-width: 780px;
+}
+.VPHero .tagline {
+  max-width: 690px;
+}
+.vp-doc table {
+  display: block;
+  overflow-x: auto;
+}

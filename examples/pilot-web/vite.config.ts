@@ -1,3 +1,4 @@
+import { ssrFixturePlugin } from './vite/ssr-plugin'
 import { resolve } from 'node:path'
 
 import react from '@vitejs/plugin-react'
@@ -9,8 +10,9 @@ export default defineConfig(({ mode }) => {
   const root = resolve(import.meta.dirname, '../..')
   const environment = { ...process.env, ...loadEnv(mode, root, '') }
   return {
+    base: environment.VITE_RCIP_STATIC_DEMO === 'true' ? '/rcip/demo/' : '/',
     envDir: root,
-    plugins: [react(), pilotAgentPlugin(environment)],
+    plugins: [react(), pilotAgentPlugin(environment), ssrFixturePlugin()],
     server: {
       host: process.env.RCIP_PILOT_HOST ?? '0.0.0.0',
       port: Number(process.env.RCIP_PILOT_PORT ?? 4176),

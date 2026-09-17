@@ -94,7 +94,9 @@ export function useRcipCapability<
 ): void {
   const runtime = useRcipRuntime()
   const bindingRef = useRef(binding)
-  bindingRef.current = binding
+  useEffect(() => {
+    bindingRef.current = binding
+  })
 
   useEffect(
     () =>

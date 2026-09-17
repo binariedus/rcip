@@ -1,3 +1,7 @@
+---
+title: Assist and input pipelines
+description: Integrate provider-neutral Assist, trusted confirmation, read-only mode, headless orchestration, and consumer-owned audio and text processing.
+---
 # Assist and input pipelines
 
 `@binaried/rcip/assist` combines a provider-neutral orchestration hook with an
