@@ -471,7 +471,7 @@ test('browser-driven runtime contract matrix passes every safety path', async ({
   await page.getByRole('button', { name: 'Run contract matrix' }).click()
 
   const matrix = page.getByTestId('contract-matrix')
-  await expect(matrix.locator('[data-contract-check]')).toHaveCount(13)
+  await expect(matrix.locator('[data-contract-check]')).toHaveCount(37)
   await expect(
     matrix.locator('[data-contract-passed="false"]'),
   ).toHaveCount(0)

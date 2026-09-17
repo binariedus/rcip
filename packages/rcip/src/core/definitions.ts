@@ -4,6 +4,7 @@ import type {
   RcipJsonValue,
   RcipScopeDefinition,
 } from './types'
+import { immutableCopy } from './values'
 
 function freezeArray<T>(values: readonly T[]): readonly T[] {
   return Object.freeze([...values])
@@ -25,6 +26,8 @@ export function defineRcipCapability<
 ): RcipCapabilityDefinition<Input, Output> {
   return Object.freeze({
     ...definition,
+    inputSchema: immutableCopy(definition.inputSchema),
+    outputSchema: immutableCopy(definition.outputSchema),
     scopeIds: freezeArray(definition.scopeIds),
     tags: definition.tags ? freezeArray(definition.tags) : undefined,
     usage: definition.usage
@@ -33,7 +36,7 @@ export function defineRcipCapability<
           examples: definition.usage.examples
             ? freezeArray(
                 definition.usage.examples.map((example) =>
-                  Object.freeze({ ...example }),
+                  immutableCopy(example),
                 ),
               )
             : undefined,

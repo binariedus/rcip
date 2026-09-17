@@ -1,16 +1,25 @@
 # RCIP
 
-**React Component Interface Protocol**
+**React Capability Interface Protocol**
 
-RCIP is a small semantic control plane for React applications. An application
-declares stable product capabilities, binds them to its existing behavior, and
-gives consumer-defined tools a narrow client for discovery and invocation.
+RCIP lets React applications expose typed capabilities to AI assistants and other
+tools without DOM scraping. Your application controls contextual discovery,
+input/output validation, availability, policy, confirmation, and execution.
+The core is framework-neutral; React bindings connect contracts to live behavior.
 
-RCIP does not expose the DOM or React component tree. It does not include an AI
-provider, model credentials, automation service, or plugin marketplace. Human
-UI and semantic tools remain parallel interfaces over the same application
-code. An optional provider-neutral Assist dot and floating panel are included;
-the consuming application supplies the decision callback.
+[![npm](https://img.shields.io/npm/v/@binaried/rcip)](https://www.npmjs.com/package/@binaried/rcip)
+[![CI](https://github.com/binariedus/rcip/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/binariedus/rcip/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
+
+**[Documentation](https://binariedus.github.io/rcip/) ·
+[Quick start](https://binariedus.github.io/rcip/quick-start.html) ·
+[Interactive demo](https://binariedus.github.io/rcip/demo/) ·
+[API reference](https://binariedus.github.io/rcip/api.html) ·
+[Source](https://github.com/binariedus/rcip)**
+
+Optional Assist and Explorer provide a ready-made conversation UI and read-only
+capability inspector. No model service, credentials, or remote transport is bundled.
+The hosted demo uses a clearly labeled deterministic adapter and needs no account.
 
 ## Why RCIP
 
@@ -251,7 +260,7 @@ const inputPipeline: RcipAssistInputPipeline = {
 Composer text uses the same processor chain. A final text value is submitted to
 the existing decision flow; `null` consumes the input, and an untransformed
 audio value fails safely. See
-[Assist and input pipelines](docs/assist-and-input-pipelines.md).
+[Assist and input pipelines](https://binariedus.github.io/rcip/assist-and-input-pipelines.html).
 
 ## Optional capability explorer
 
@@ -291,15 +300,15 @@ npm audit
 
 ## Documentation
 
-- [Protocol 1.0](docs/protocol.md)
-- [Security model](docs/security.md)
-- [Tool author guide](docs/tool-author-guide.md)
-- [Assist and input pipelines](docs/assist-and-input-pipelines.md)
-- [Migrating from v1](docs/migration-v1-to-v2.md)
-- [Release runbook](docs/releasing.md)
-- [Contributing](CONTRIBUTING.md)
-- [Security reporting](SECURITY.md)
-- [Changelog](CHANGELOG.md)
+- [Protocol 1.0](https://binariedus.github.io/rcip/protocol.html)
+- [Security model](https://binariedus.github.io/rcip/security.html)
+- [Tool author guide](https://binariedus.github.io/rcip/tool-author-guide.html)
+- [Assist and input pipelines](https://binariedus.github.io/rcip/assist-and-input-pipelines.html)
+- [Migrating from v1](https://binariedus.github.io/rcip/migration-v1-to-v2.html)
+- [Release runbook](https://binariedus.github.io/rcip/releasing.html)
+- [Contributing](https://github.com/binariedus/rcip/blob/main/CONTRIBUTING.md)
+- [Security reporting](https://github.com/binariedus/rcip/blob/main/SECURITY.md)
+- [Changelog](https://binariedus.github.io/rcip/changelog.html)
 
 ## License
 

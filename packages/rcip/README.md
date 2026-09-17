@@ -1,25 +1,25 @@
 # @binaried/rcip
 
-**React Component Interface Protocol**
+**React Capability Interface Protocol**
 
-RCIP is a semantic control plane for React applications. Your application
-declares stable product capabilities, binds them to behavior it already owns,
-and gives tools a narrow client for discovery and invocation.
+RCIP lets React applications expose typed capabilities to AI assistants and other
+tools without DOM scraping. Your application controls contextual discovery,
+input/output validation, availability, policy, confirmation, and execution.
+The core is framework-neutral; React bindings connect contracts to live behavior.
 
-The result is one application with parallel interfaces:
+[![npm](https://img.shields.io/npm/v/@binaried/rcip)](https://www.npmjs.com/package/@binaried/rcip)
+[![CI](https://github.com/binariedus/rcip/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/binariedus/rcip/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 
-- people continue using the normal UI;
-- assistants, command surfaces, translators, narrators, and automation tools
-  use explicit product capabilities instead of scraping the DOM;
-- the application keeps authority over availability, validation, policy,
-  confirmation, execution, and output.
+**[Documentation](https://binariedus.github.io/rcip/) ·
+[Quick start](https://binariedus.github.io/rcip/quick-start.html) ·
+[Interactive demo](https://binariedus.github.io/rcip/demo/) ·
+[API reference](https://binariedus.github.io/rcip/api.html) ·
+[Source](https://github.com/binariedus/rcip)**
 
-```bash
-npm install @binaried/rcip
-```
-
-RCIP 2 implements protocol `1.0`, supports React 18 and 19, and includes both
-ESM and CommonJS entry points.
+Optional Assist and Explorer provide a ready-made conversation UI and read-only
+capability inspector. No model service, credentials, or remote transport is bundled.
+The hosted demo uses a clearly labeled deterministic adapter and needs no account.
 
 ## The design in one minute
 

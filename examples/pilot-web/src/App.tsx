@@ -1,10 +1,4 @@
-import {
-  type FormEvent,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { type FormEvent, useCallback, useMemo, useRef, useState } from 'react'
 
 import {
   RcipProvider,
@@ -13,10 +7,7 @@ import {
   useRcipCapability,
   useRcipContext,
 } from '@binaried/rcip'
-import {
-  RcipAssist,
-  type RcipAssistInputPipeline,
-} from '@binaried/rcip/assist'
+import { RcipAssist, type RcipAssistInputPipeline } from '@binaried/rcip/assist'
 
 import {
   completeTodoCapability,
@@ -49,6 +40,8 @@ const INITIAL_TODOS: Todo[] = [
 ]
 
 function PilotApplication({ events, runtime }: PilotApplicationProps) {
+  const [alternateLayout, setAlternateLayout] = useState(false)
+  const staticDemo = import.meta.env.VITE_RCIP_STATIC_DEMO === 'true'
   const [activeArea, setActiveArea] = useState<ActiveArea>('todos')
   const [todos, setTodos] = useState<readonly Todo[]>(INITIAL_TODOS)
   const [profile, setProfile] = useState<Profile>({
@@ -63,8 +56,9 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
     new URLSearchParams(window.location.search).get('voicePipeline') ===
     'fixture'
   const voiceDisabled =
+    staticDemo ||
     new URLSearchParams(window.location.search).get('voicePipeline') ===
-    'disabled'
+      'disabled'
   const inputPipeline = useMemo<RcipAssistInputPipeline | undefined>(
     () =>
       pipelineFixtureEnabled
@@ -133,19 +127,16 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
     }),
     [todos],
   )
-  const createTodo = useCallback(
-    ({ title }: { title: string }): Todo => {
-      const todo: Todo = {
-        id: `todo-${nextTodoId.current}`,
-        title: title.trim(),
-        completed: false,
-      }
-      nextTodoId.current += 1
-      setTodos((current) => [...current, todo])
-      return todo
-    },
-    [],
-  )
+  const createTodo = useCallback(({ title }: { title: string }): Todo => {
+    const todo: Todo = {
+      id: `todo-${nextTodoId.current}`,
+      title: title.trim(),
+      completed: false,
+    }
+    nextTodoId.current += 1
+    setTodos((current) => [...current, todo])
+    return todo
+  }, [])
   const completeTodo = useCallback(
     ({ id }: { id: string }): Todo => {
       const todo = todos.find((candidate) => candidate.id === id)
@@ -244,10 +235,10 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
   }
 
   return (
-    <main>
+    <main className={alternateLayout ? 'alternate-layout' : undefined}>
       <header className="hero">
         <div>
-          <p className="eyebrow">React Component Interface Protocol</p>
+          <p className="eyebrow">React Capability Interface Protocol</p>
           <h1>One application, two interfaces.</h1>
           <p>
             People use the normal UI. An AI delegate sees a compact semantic
@@ -256,6 +247,30 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
         </div>
         <span className="pilot-badge">Protocol 1.0 reference</span>
       </header>
+
+      {staticDemo ? (
+        <aside className="demo-note" aria-label="About this demo">
+          <strong>Interactive example · no AI service connected</strong>
+          <p>
+            Try “list todos”, “add todo Buy milk”, or “delete Review security
+            policy” in Assist. Commands use a small deterministic adapter.
+            Changes stay in this tab and reset on reload. Voice is disabled.
+          </p>
+          <a href="/rcip/quick-start.html">Build your own integration →</a>
+        </aside>
+      ) : null}
+      <button
+        className="button button-secondary layout-toggle"
+        type="button"
+        onClick={() => setAlternateLayout((value) => !value)}
+      >
+        Change layout
+      </button>
+      <p className="layout-explanation">
+        Rearrange the panels, then try the same capability. Its contract stays
+        unchanged. Good role-based browser selectors can also survive this
+        change; domain rules still need validation.
+      </p>
 
       <section className="protocol-flow" aria-label="RCIP integration flow">
         <div>
@@ -281,7 +296,10 @@ function PilotApplication({ events, runtime }: PilotApplicationProps) {
       </section>
 
       <div className="layout">
-        <section className="panel application-panel" aria-labelledby="app-heading">
+        <section
+          className="panel application-panel"
+          aria-labelledby="app-heading"
+        >
           <div className="panel-heading-row">
             <div>
               <p className="eyebrow">Human interface</p>

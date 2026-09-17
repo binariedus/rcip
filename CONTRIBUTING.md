@@ -1,6 +1,6 @@
 # Contributing to RCIP
 
-Thank you for helping improve the React Component Interface Protocol.
+Thank you for helping improve the React Capability Interface Protocol.
 
 ## Development
 

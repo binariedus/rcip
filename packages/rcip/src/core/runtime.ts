@@ -27,6 +27,8 @@ import type {
   RcipValidationIssue,
 } from "./types";
 
+import { copyJson, immutableCopy } from "./values";
+
 interface InternalBinding {
   readonly execute: (
     input: RcipJsonValue,
@@ -42,11 +44,39 @@ interface PendingConfirmation {
   readonly expiresAt: number;
   readonly request: RcipInvocationRequest;
   readonly invocationId: string;
+  readonly binding: InternalBinding;
+  readonly context: RcipSemanticContext;
+  readonly cleanup: () => void;
 }
 
 const DEFAULT_CONFIRMATION_TTL_MS = 120_000;
 const IDENTIFIER_PATTERN = /^[a-z][A-Za-z0-9]*(?:[._-][a-z][A-Za-z0-9]*)*$/;
 let fallbackIdSequence = 0;
+
+function waitForPolicy(
+  decision: RcipPolicyDecision | Promise<RcipPolicyDecision>,
+  signal?: AbortSignal,
+): Promise<RcipPolicyDecision> {
+  return new Promise((resolve, reject) => {
+    const abort = () => {
+      cleanup();
+      reject(new Error("Policy wait cancelled."));
+    };
+    const cleanup = () => signal?.removeEventListener("abort", abort);
+    Promise.resolve(decision).then(
+      (value) => {
+        cleanup();
+        resolve(value);
+      },
+      (error) => {
+        cleanup();
+        reject(error);
+      },
+    );
+    if (signal?.aborted) abort();
+    else signal?.addEventListener("abort", abort, { once: true });
+  });
+}
 
 function defaultCreateId(prefix: string): string {
   fallbackIdSequence += 1;
@@ -170,6 +200,10 @@ export function createRcipRuntime(
   options: RcipRuntimeOptions = {},
 ): RcipRuntime {
   assertDefinition(definition);
+  const catalogIdentities = new Map(
+    definition.capabilities.map((capability) => [capability.id, capability]),
+  );
+  definition = immutableCopy(definition);
 
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   const createId = options.createId ?? defaultCreateId;
@@ -192,11 +226,22 @@ export function createRcipRuntime(
   const scopeIds = new Set(definition.scopes.map((scope) => scope.id));
   const bindings = new Map<string, InternalBinding>();
   const confirmations = new Map<string, PendingConfirmation>();
-  const activeInvocationIds = new Set<string>();
+  const activeInvocationIds = new Map<string, symbol>();
+  const completedConfirmations = new Map<string, RcipInvocationFailed>();
   const subscribers = new Set<() => void>();
   let semanticContext: RcipSemanticContext = { activeScopeIds: [] };
   let revision = 0;
   let snapshot: RcipApplicationSnapshot;
+
+  function sameContext(context: RcipSemanticContext): boolean {
+    return (
+      context.primaryScopeId === semanticContext.primaryScopeId &&
+      context.activeScopeIds.length === semanticContext.activeScopeIds.length &&
+      context.activeScopeIds.every(
+        (id, index) => id === semanticContext.activeScopeIds[index],
+      )
+    );
+  }
 
   function safeAvailability(
     binding: InternalBinding | undefined,
@@ -250,7 +295,7 @@ export function createRcipRuntime(
   }
 
   function buildSnapshot(): RcipApplicationSnapshot {
-    return {
+    return immutableCopy({
       protocolVersion: definition.protocolVersion,
       revision,
       application: { ...definition.application },
@@ -260,7 +305,7 @@ export function createRcipRuntime(
         primaryScopeId: semanticContext.primaryScopeId,
       },
       capabilities: definition.capabilities.map(capabilitySnapshot),
-    };
+    });
   }
 
   function refresh(): void {
@@ -304,14 +349,15 @@ export function createRcipRuntime(
   }
 
   async function executeInvocation(
-    request: RcipInvocationRequest,
+    suppliedRequest: RcipInvocationRequest,
     confirmed: boolean,
     fixedInvocationId?: string,
   ): Promise<RcipInvocationOutcome> {
     const invocationId =
-      fixedInvocationId ?? request.invocationId ?? createId("invocation");
-    const capabilityId = request.capabilityId;
-
+      fixedInvocationId ??
+      suppliedRequest.invocationId ??
+      createId("invocation");
+    const capabilityId = suppliedRequest.capabilityId;
     if (activeInvocationIds.has(invocationId)) {
       return failedOutcome(
         invocationId,
@@ -320,7 +366,44 @@ export function createRcipRuntime(
         "An invocation with this id is already active.",
       );
     }
+    const reservation = Symbol(invocationId);
+    activeInvocationIds.set(invocationId, reservation);
+    try {
+      let request: RcipInvocationRequest;
+      try {
+        request = Object.freeze({
+          capabilityId,
+          invocationId,
+          input: copyJson(suppliedRequest.input),
+          signal: suppliedRequest.signal,
+        });
+      } catch {
+        return failedOutcome(
+          invocationId,
+          capabilityId,
+          "INPUT_INVALID",
+          "The capability input must be a JSON value.",
+        );
+      }
+      return await executeReservedInvocation(request, confirmed, invocationId);
+    } finally {
+      if (
+        activeInvocationIds.get(invocationId) === reservation &&
+        ![...confirmations.values()].some(
+          (pending) => pending.invocationId === invocationId,
+        )
+      ) {
+        activeInvocationIds.delete(invocationId);
+      }
+    }
+  }
 
+  async function executeReservedInvocation(
+    request: RcipInvocationRequest,
+    confirmed: boolean,
+    invocationId: string,
+  ): Promise<RcipInvocationOutcome> {
+    const capabilityId = request.capabilityId;
     emit({
       timestamp: Date.now(),
       invocationId,
@@ -388,16 +471,20 @@ export function createRcipRuntime(
       return outcome;
     }
 
-    const currentCapability = capabilitySnapshot(capability);
+    const policyContext = immutableCopy(semanticContext);
+    const currentCapability = immutableCopy(capabilitySnapshot(capability));
     let policyDecision: RcipPolicyDecision;
     try {
       policyDecision = options.policy
-        ? await options.policy({
-            capability: currentCapability,
-            input: request.input,
-            semanticContext,
-            confirmed,
-          })
+        ? await waitForPolicy(
+            options.policy({
+              capability: currentCapability,
+              input: immutableCopy(request.input),
+              semanticContext: policyContext,
+              confirmed,
+            }),
+            request.signal,
+          )
         : {
             decision: defaultPolicy(capability.effect, confirmed),
           };
@@ -408,8 +495,12 @@ export function createRcipRuntime(
       const outcome = failedOutcome(
         invocationId,
         capabilityId,
-        "POLICY_EVALUATION_FAILED",
-        "The host application could not evaluate this operation safely.",
+        request.signal?.aborted
+          ? "EXECUTION_ABORTED"
+          : "POLICY_EVALUATION_FAILED",
+        request.signal?.aborted
+          ? "The capability invocation was cancelled."
+          : "The host application could not evaluate this operation safely.",
       );
       emitOutcome(outcome);
       return outcome;
@@ -421,6 +512,39 @@ export function createRcipRuntime(
         capabilityId,
         "EXECUTION_ABORTED",
         "The capability invocation was cancelled.",
+      );
+      emitOutcome(outcome);
+      return outcome;
+    }
+
+    // Host callbacks may await navigation, permission changes, or an unmount.
+    if (bindings.get(capabilityId) !== binding) {
+      const outcome = failedOutcome(
+        invocationId,
+        capabilityId,
+        "CAPABILITY_UNBOUND",
+        "The capability binding changed during policy evaluation.",
+      );
+      emitOutcome(outcome);
+      return outcome;
+    }
+    if (!sameContext(policyContext)) {
+      const outcome = failedOutcome(
+        invocationId,
+        capabilityId,
+        "POLICY_DENIED",
+        "Application context changed. Request the operation again.",
+        "denied",
+      );
+      emitOutcome(outcome);
+      return outcome;
+    }
+    if (!safeAvailability(binding)?.available) {
+      const outcome = failedOutcome(
+        invocationId,
+        capabilityId,
+        "CAPABILITY_UNAVAILABLE",
+        "The capability is no longer available.",
       );
       emitOutcome(outcome);
       return outcome;
@@ -453,12 +577,49 @@ export function createRcipRuntime(
 
       const confirmationId = createId("confirmation");
       const expiresAt = Date.now() + confirmationTtlMs;
+      const finishPending = (
+        code: "CONFIRMATION_EXPIRED" | "EXECUTION_ABORTED",
+      ) => {
+        const pending = confirmations.get(confirmationId);
+        if (!pending) return;
+        pending.cleanup();
+        confirmations.delete(confirmationId);
+        activeInvocationIds.delete(invocationId);
+        const outcome = failedOutcome(
+          invocationId,
+          capabilityId,
+          code,
+          code === "CONFIRMATION_EXPIRED"
+            ? "The confirmation request expired."
+            : "The capability invocation was cancelled.",
+        );
+        completedConfirmations.set(confirmationId, outcome);
+        // Retain only bounded, non-sensitive receipts, never request payloads.
+        if (completedConfirmations.size > 256) {
+          const oldest = completedConfirmations.keys().next().value;
+          if (oldest !== undefined) completedConfirmations.delete(oldest);
+        }
+        emitOutcome(outcome);
+      };
+      const timer = setTimeout(
+        () => finishPending("CONFIRMATION_EXPIRED"),
+        Math.max(0, confirmationTtlMs),
+      );
+      if (typeof timer === "object" && "unref" in timer) timer.unref();
+      const abort = () => finishPending("EXECUTION_ABORTED");
       confirmations.set(confirmationId, {
         confirmationId,
         expiresAt,
         request,
         invocationId,
+        binding,
+        context: policyContext,
+        cleanup: () => {
+          clearTimeout(timer);
+          request.signal?.removeEventListener("abort", abort);
+        },
       });
+      request.signal?.addEventListener("abort", abort, { once: true });
       emit({
         timestamp: Date.now(),
         invocationId,
@@ -479,7 +640,6 @@ export function createRcipRuntime(
       };
     }
 
-    activeInvocationIds.add(invocationId);
     emit({
       timestamp: Date.now(),
       invocationId,
@@ -488,12 +648,25 @@ export function createRcipRuntime(
     });
 
     try {
-      const output = await binding.execute(request.input, {
+      const handlerOutput = await binding.execute(copyJson(request.input), {
         signal: request.signal,
         invocationId,
         requestedAt: Date.now(),
-        semanticContext,
+        semanticContext: policyContext,
       });
+      let output: RcipJsonValue;
+      try {
+        output = copyJson(handlerOutput);
+      } catch {
+        const outcome = failedOutcome(
+          invocationId,
+          capabilityId,
+          "OUTPUT_INVALID",
+          "The capability output must be a JSON value.",
+        );
+        emitOutcome(outcome);
+        return outcome;
+      }
       if (!binding.validateOutput(output)) {
         const outcome = failedOutcome(
           invocationId,
@@ -529,8 +702,6 @@ export function createRcipRuntime(
       );
       emitOutcome(outcome);
       return outcome;
-    } finally {
-      activeInvocationIds.delete(invocationId);
     }
   }
 
@@ -540,8 +711,13 @@ export function createRcipRuntime(
   ): Promise<RcipInvocationOutcome> {
     const pending = confirmations.get(confirmationId);
     confirmations.delete(confirmationId);
+    pending?.cleanup();
+    if (pending) activeInvocationIds.delete(pending.invocationId);
 
     if (!pending) {
+      const completed = completedConfirmations.get(confirmationId);
+      completedConfirmations.delete(confirmationId);
+      if (completed) return completed;
       return failedOutcome(
         createId("invocation"),
         "unknown",
@@ -579,6 +755,20 @@ export function createRcipRuntime(
       return outcome;
     }
 
+    if (
+      bindings.get(pending.request.capabilityId) !== pending.binding ||
+      !sameContext(pending.context)
+    ) {
+      const outcome = failedOutcome(
+        pending.invocationId,
+        pending.request.capabilityId,
+        "POLICY_DENIED",
+        "The application changed while confirmation was pending. Request the operation again.",
+        "denied",
+      );
+      emitOutcome(outcome);
+      return outcome;
+    }
     return executeInvocation(pending.request, true, pending.invocationId);
   }
 
@@ -610,7 +800,10 @@ export function createRcipRuntime(
   const host: RcipHostController = {
     bindCapability(definitionToBind, binding) {
       const catalogDefinition = definitions.get(definitionToBind.id);
-      if (!catalogDefinition || catalogDefinition !== definitionToBind) {
+      if (
+        !catalogDefinition ||
+        catalogIdentities.get(definitionToBind.id) !== definitionToBind
+      ) {
         throw new Error(
           `Capability ${definitionToBind.id} is not the registered catalog definition.`,
         );
@@ -618,7 +811,15 @@ export function createRcipRuntime(
       if (bindings.has(definitionToBind.id)) {
         throw new Error(`Capability ${definitionToBind.id} is already bound.`);
       }
-      const internalBinding = makeBinding(ajv, definitionToBind, binding);
+      const internalBinding = makeBinding(
+        ajv,
+        {
+          ...definitionToBind,
+          inputSchema: catalogDefinition.inputSchema,
+          outputSchema: catalogDefinition.outputSchema,
+        },
+        binding,
+      );
       bindings.set(definitionToBind.id, internalBinding);
       refresh();
       return () => {

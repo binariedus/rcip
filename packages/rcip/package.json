@@ -1,22 +1,30 @@
 {
   "name": "@binaried/rcip",
-  "version": "2.0.0",
-  "description": "React Component Interface Protocol: a semantic capability control plane for React applications.",
+  "version": "2.0.1",
+  "description": "Typed capabilities for React apps and AI assistants, with contextual discovery, validation, policy, and confirmation—without DOM scraping.",
   "license": "Apache-2.0",
   "keywords": [
     "react",
+    "typescript",
     "ai",
-    "capabilities",
+    "ai-agents",
+    "react-ai",
+    "browser-agents",
+    "tool-calling",
     "semantic-interface",
-    "application-protocol",
-    "tooling"
+    "capabilities",
+    "capability-registry",
+    "human-in-the-loop",
+    "json-schema",
+    "react-18",
+    "react-19"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/binariedus/rcip.git",
     "directory": "packages/rcip"
   },
-  "homepage": "https://github.com/binariedus/rcip#readme",
+  "homepage": "https://binariedus.github.io/rcip/",
   "bugs": {
     "url": "https://github.com/binariedus/rcip/issues"
   },
