@@ -133,10 +133,28 @@ a published version, or rely on npm unpublish as a normal rollback mechanism.
 documentation, and deterministic static demo. `npm run test:site` verifies the
 production output. Generated pages and build outputs remain ignored.
 
-The Pages workflow publishes release tags (or an explicit manual dispatch) through
-GitHub Actions to https://binariedus.github.io/rcip/. Enable Pages with the Actions
-build source once. After publishing, verify direct document URLs, search, sitemap,
-social metadata, and demo confirmation behavior on the public origin.
+The Pages workflow publishes merged `main` changes (or an explicit manual dispatch
+from `main`) through GitHub Actions to https://binariedus.github.io/rcip/. The
+`github-pages` environment allows deployments from `main`; keep that protection
+in place. Package publication still runs from release tags.
+
+For initial setup, an organization owner must enable **Member privileges → Pages
+creation → Public → Save** in the organization settings. Then enable Pages in the
+repository with **GitHub Actions** as its build source. The organization's
+**Pages** settings screen manages custom domains; no custom domain is needed for
+the `github.io` address. See [GitHub's Pages publication settings](https://docs.github.com/en/organizations/managing-organization-settings/managing-the-publication-of-github-pages-sites-for-your-organization).
+
+After publishing, verify direct document URLs, search, sitemap, social metadata,
+and demo confirmation behavior on the public origin:
+
+```bash
+RCIP_SITE_URL=https://binariedus.github.io npm run test:site
+```
+
+Confirm npm publication using `npm view @binaried/rcip@latest version --prefer-online`
+and a fresh package installation. A successful upload can take a few minutes to
+appear in the registry, and the npm website may display older metadata while its
+cache updates. Report registry availability separately from the public website.
 
 Keep npm/GitHub descriptions, keywords/topics, homepage, README links, and release
 notes consistent. Indexing and search rankings are external outcomes; do not claim
