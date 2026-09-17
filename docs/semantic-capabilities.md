@@ -1,8 +1,8 @@
 ---
-title: Give React AI assistants capabilities instead of DOM instructions
+title: React UI agents and tool calling through semantic capabilities
 description: A practical architecture for React tool calling that reuses application behavior, keeps policy in the host, and reduces dependence on DOM structure.
 ---
-# Give assistants capabilities instead of DOM instructions
+# React UI agents and tool calling through capabilities
 
 A support assistant needs to open the right Finance page. A command palette needs
 the same operation. A browser agent might need it later. Each consumer can learn
@@ -58,3 +58,27 @@ the current catalog without executing it. Other consumers can use the same clien
 For a small application with one action, a direct function may be enough. RCIP is
 useful when a consistent capability boundary is worth maintaining across features
 and consumers. [Build the first capability](./quick-start).
+
+## React function calling with application context
+
+A consumer can translate a model's function/tool call into a capability ID and
+JSON input, then call `client.invoke`. RCIP supplies contextual discovery, input
+and output validation, and the host's policy and confirmation boundary. The
+consumer owns model-specific tool definitions and response translation; RCIP does
+not bundle provider credentials or a provider transport.
+
+For a React UI agent, the same capability can read current state or request an
+application action. Hooks update the binding after React commits a render, so the
+contract can follow application state without exposing component instances.
+
+## Browser use in React applications
+
+A browser agent can interact through the visible UI or through application
+capabilities when an integration gives it access to the RCIP client. Semantic
+actions help when the application can expose stable intent and domain checks.
+Browser automation remains useful for visual checks and applications without a
+capability integration. Installing RCIP alone does not connect a browser-agent
+product or make the page discoverable through WebMCP.
+
+See [RCIP, MCP, and WebMCP](./ecosystem) for current boundaries and the planned
+adapter direction.

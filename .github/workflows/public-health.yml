@@ -1,0 +1,67 @@
+name: RCIP public health
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Check depth
+        type: choice
+        options: [availability, regression]
+        default: regression
+      version:
+        description: Exact npm version or latest
+        type: string
+        default: latest
+  workflow_call:
+    inputs:
+      mode:
+        type: string
+        default: regression
+      version:
+        type: string
+        default: latest
+      wait-seconds:
+        type: number
+        default: 0
+      expires-at:
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  availability:
+    if: ${{ github.event.repository.private == false && inputs.mode == 'availability' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm run health:availability -- --version "$RCIP_HEALTH_VERSION"
+        env:
+          RCIP_HEALTH_VERSION: ${{ inputs.version }}
+          RCIP_HEALTH_UNTIL: ${{ inputs.expires-at }}
+  regression:
+    if: ${{ github.event.repository.private == false && inputs.mode == 'regression' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Use the pinned npm toolchain
+        run: npm install --global npm@11.16.0
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run health:regression -- --version "$RCIP_HEALTH_VERSION" --wait-seconds "$RCIP_HEALTH_WAIT"
+        env:
+          RCIP_HEALTH_VERSION: ${{ inputs.version }}
+          RCIP_HEALTH_WAIT: ${{ inputs.wait-seconds || 0 }}
+          RCIP_HEALTH_UNTIL: ${{ inputs.expires-at }}

@@ -1,0 +1,58 @@
+name: RCIP seven-day monitoring
+on:
+  schedule:
+    - cron: '7,17,27,37,47,57 * * * *'
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Check depth (still respects the expiry guard)
+        type: choice
+        options: [availability, regression]
+        default: availability
+permissions:
+  contents: read
+concurrency:
+  group: rcip-seven-day-monitoring
+  cancel-in-progress: false
+jobs:
+  window:
+    if: ${{ github.event.repository.private == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      state: ${{ steps.window.outputs.state }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - id: window
+        run: node scripts/health-window.mjs
+        env:
+          RCIP_HEALTH_UNTIL: ${{ vars.RCIP_HEALTH_UNTIL }}
+  check:
+    needs: window
+    if: ${{ needs.window.outputs.state == 'active' }}
+    uses: ./.github/workflows/public-health.yml
+    with:
+      mode: ${{ github.event.schedule == '23 4 * * *' && 'regression' || inputs.mode || 'availability' }}
+      version: latest
+      expires-at: ${{ vars.RCIP_HEALTH_UNTIL }}
+  expire:
+    needs: window
+    if: ${{ needs.window.outputs.state == 'expired' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      actions: write
+    steps:
+      - name: Disable only the temporary monitoring workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method PUT "repos/$GITHUB_REPOSITORY/actions/workflows/health-week.yml/disable"
+          echo 'Seven-day schedule disabled. Release and manual health checks remain available.' >> "$GITHUB_STEP_SUMMARY"

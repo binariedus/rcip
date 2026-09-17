@@ -16,6 +16,7 @@ test('documentation is searchable, crawlable, and linked', async ({
     'finance-case-study.html',
     'ecosystem.html',
     'changelog.html',
+    'health-monitoring.html',
   ]) {
     const response = await request.get(`/rcip/${path}`)
     expect(response.ok(), path).toBe(true)

@@ -2,7 +2,7 @@
 title: RCIP, WebMCP, MCP Apps, AG-UI, and A2UI
 description: Compare application capabilities, browser tool exposure, agent event streams, and generated interfaces without conflating the protocols.
 ---
-# Where RCIP fits
+# React capabilities, MCP, and WebMCP
 
 These technologies overlap in goals but address different integration boundaries.
 This comparison was checked against their official documentation in September 2026.
@@ -27,10 +27,24 @@ RCIP's value is a coherent application capability model that can serve multiple
 consumers without depending on browser support. Direct WebMCP may be sufficient
 for a smaller browser-specific integration.
 
-**RCIP 2.0.1 does not include a WebMCP adapter.** A future adapter should preserve
+**Direct MCP and WebMCP adapters are planned and are not included in RCIP 2.0.2.**
+A future adapter should preserve
 `client.invoke`, application-selected exposure, and trusted confirmation rather
 than exporting raw handlers. No MCP transport adapter is included either.
 
 RCIP's July 2025 npm release predates Chrome's February 2026 early-preview
 announcement. That is a release-history fact, not a claim of priority over all
 earlier proposals or related work.
+
+## Open specifications and compatibility
+
+WebMCP is an open [Web Machine Learning Community Group draft](https://webmachinelearning.github.io/webmcp/)
+with contributors from multiple organizations. It is not exclusive to one browser,
+and the draft is not currently a W3C Standard. MCP also has a published protocol
+specification. Both names describe concrete integration contracts as well as a
+broader application-tooling ecosystem.
+
+RCIP's related ecosystem keywords help developers find this comparison. They do
+not claim that an MCP or WebMCP consumer can discover RCIP automatically today.
+React applications can use RCIP's current in-process client while keeping future
+adapter work separate from their application capability definitions.
