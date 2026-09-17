@@ -89,6 +89,7 @@ iteration must use a new version such as `2.0.0-beta.1`.
    npm ci
    npm run check
    npm run test:e2e
+   npm run check:starter
    npm audit --audit-level=high
    npm pack --workspace @binaried/rcip --dry-run
    ```
@@ -124,7 +125,7 @@ successful upload, investigate the published version before retrying anything.
 Do not republish an immutable version. Repeat the exact-version regression using
 the manual public-health workflow after resolving the failure.
 
-The current maintenance release is `2.0.2`, retaining protocol `1.0` and public
+The current maintenance release is `2.0.3`, retaining protocol `1.0` and public
 API compatibility. Use the next unused patch version if it is already published.
 Publish only after packed-consumer and composed browser checks pass.
 

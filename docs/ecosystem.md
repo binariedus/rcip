@@ -27,7 +27,7 @@ RCIP's value is a coherent application capability model that can serve multiple
 consumers without depending on browser support. Direct WebMCP may be sufficient
 for a smaller browser-specific integration.
 
-**Direct MCP and WebMCP adapters are planned and are not included in RCIP 2.0.2.**
+**Direct MCP and WebMCP adapters are planned and are not included in RCIP 2.0.3.**
 A future adapter should preserve
 `client.invoke`, application-selected exposure, and trusted confirmation rather
 than exporting raw handlers. No MCP transport adapter is included either.
@@ -35,6 +35,20 @@ than exporting raw handlers. No MCP transport adapter is included either.
 RCIP's July 2025 npm release predates Chrome's February 2026 early-preview
 announcement. That is a release-history fact, not a claim of priority over all
 earlier proposals or related work.
+
+## Browser-use integrations and future discovery
+
+A browser-use tool can consume RCIP's existing client through an application-owned
+integration. The [consumer guide](./tool-author-guide) describes the current
+discovery/invocation boundary. This applies to custom tools as well as potential
+integrations with existing products; it is not a claim that those products already
+discover RCIP automatically.
+
+Generic cross-page discovery is a candidate for a future major version alongside
+protocol adapters. It needs an explicit exposure decision, origin/session rules,
+version negotiation, navigation lifecycle, and a confirmation boundary that the
+consumer cannot grant itself. The current release defines no global browser hook
+or transport format for that future interface.
 
 ## Open specifications and compatibility
 

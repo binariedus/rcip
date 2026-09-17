@@ -32,18 +32,21 @@ features:
 npm install @binaried/rcip
 ```
 
-RCIP 2.0.2 implements the in-process protocol 1.0. Its core is framework-neutral;
+RCIP 2.0.3 implements the in-process protocol 1.0. Its core is framework-neutral;
 React bindings support React 18 and 19. Optional Assist and Explorer have separate imports.
 
 Start with a single useful action, then share the same capability contract across
 human-facing application behavior and assistant integrations.
 
-[Understand the architecture](./semantic-capabilities) · [Read the Finance case study](./finance-case-study) · [Inspect the security boundary](./security)
+[Run the standalone React starter](./react-starter) · [Understand the architecture](./semantic-capabilities) · [Read the Finance case study](./finance-case-study) · [Inspect the security boundary](./security)
 
 ## React tool calling and browser agents
 
 Declare the application actions an assistant or UI agent can request, bind them
 to current React state, and route tool calls through the validated RCIP client.
+An in-app agent, agentic UI, or frontend tool can consume the same application
+capabilities. Browser use and browser automation are supported application areas
+when your consumer connects the agent to RCIP's discovery and invocation client.
 Your consumer supplies the model/provider or browser-agent integration.
 [Explore the architecture](./semantic-capabilities).
 

@@ -4,7 +4,7 @@ description: RCIP package entrypoint sizes, React and Node support, tree-shaking
 ---
 # Compatibility and package cost
 
-RCIP 2.0.2 implements protocol 1.0. Its runtime uses standard `AbortSignal` and
+RCIP 2.0.3 implements protocol 1.0. Its runtime uses standard `AbortSignal` and
 `structuredClone` APIs. Consumers need a modern browser supporting these APIs.
 The package declares Node 20+ and React `^18.2.0 || ^19.0.0`.
 

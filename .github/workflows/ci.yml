@@ -51,6 +51,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - run: npm run check:starter
 
   secrets:
     name: Secret history

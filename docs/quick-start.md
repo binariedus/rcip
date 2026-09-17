@@ -7,6 +7,10 @@ description: Install RCIP and expose your first React action to assistants with 
 Install `@binaried/rcip`, then declare the contract outside a component. This example
 exposes a small read operation so you can verify integration without a provider or backend.
 
+```bash
+npm install @binaried/rcip
+```
+
 ```tsx
 import { useState } from 'react'
 import {
@@ -51,6 +55,9 @@ export default function App() {
 
 The two buttons access the same state. A consumer receives `runtime.client`, which
 can discover and invoke capabilities but cannot install handlers or approve confirmation.
+
+For a complete runnable project with discovery, writes, approval, and cancellation,
+use the [standalone React starter](./react-starter).
 
 ## Add writes deliberately
 

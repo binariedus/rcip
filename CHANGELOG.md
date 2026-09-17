@@ -2,6 +2,13 @@
 
 All notable RCIP changes are documented here. RCIP follows semantic versioning.
 
+## 2.0.3
+
+- Add a standalone React/TypeScript starter using the public npm package, with capability discovery, live reads, confirmed writes, validation, and cancellation.
+- Expand agentic UI, in-app agent, frontend tool, and browser-use discovery metadata and integration guidance.
+- Publish a compact llms.txt documentation map and a captioned demo walkthrough with source-only starter downloads.
+- Keep runtime behavior, public APIs, protocol 1.0, and the existing health-monitoring expiry unchanged.
+
 ## 2.0.2
 
 - Expand React UI-agent and tool-calling discovery metadata, use cases, and MCP/WebMCP positioning while making adapter boundaries explicit.

@@ -73,6 +73,11 @@ contract can follow application state without exposing component instances.
 
 ## Browser use in React applications
 
+Browser use describes a class of agent workflows, not just one product. RCIP's
+application capabilities can serve those workflows today when a consumer supplies
+the connection. An agentic UI or in-app agent can share the same frontend tools
+with a custom browser-automation consumer.
+
 A browser agent can interact through the visible UI or through application
 capabilities when an integration gives it access to the RCIP client. Semantic
 actions help when the application can expose stable intent and domain checks.

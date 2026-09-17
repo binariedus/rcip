@@ -1,6 +1,6 @@
 {
   "name": "@binaried/rcip",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "React capabilities for AI assistants, UI agents, and tool calling—with live context, validation, policy, and confirmation.",
   "license": "Apache-2.0",
   "keywords": [
@@ -37,7 +37,13 @@
     "application-context",
     "webmcp",
     "mcp",
-    "model-context-protocol"
+    "model-context-protocol",
+    "agentic-ui",
+    "frontend-tools",
+    "application-capabilities",
+    "in-app-agent",
+    "browser-use",
+    "browser-automation"
   ],
   "repository": {
     "type": "git",

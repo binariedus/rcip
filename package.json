@@ -1,7 +1,7 @@
 {
   "name": "rcip-workspace",
   "private": true,
-  "version": "2.0.2",
+  "version": "2.0.3",
   "packageManager": "npm@11.16.0",
   "type": "module",
   "workspaces": [
@@ -28,7 +28,8 @@
     "measure:bundles": "npm run build:lib && node scripts/measure-bundles.mjs",
     "test:site": "playwright test --config playwright.site.config.ts",
     "health:availability": "node scripts/health-availability.mjs",
-    "health:regression": "node scripts/health-regression.mjs"
+    "health:regression": "node scripts/health-regression.mjs",
+    "check:starter": "node scripts/check-starter.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",

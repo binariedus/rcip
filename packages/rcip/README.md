@@ -14,6 +14,7 @@ connect contracts to live behavior.
 
 **[Documentation](https://binariedus.github.io/rcip/) ·
 [Quick start](https://binariedus.github.io/rcip/quick-start.html) ·
+[React starter](https://binariedus.github.io/rcip/react-starter.html) ·
 [Interactive demo](https://binariedus.github.io/rcip/demo/) ·
 [API reference](https://binariedus.github.io/rcip/api.html) ·
 [Source](https://github.com/binariedus/rcip)**
@@ -34,6 +35,15 @@ The hosted demo uses a clearly labeled deterministic adapter and needs no accoun
 A model/provider adapter remains application-owned. RCIP does not automatically
 connect an arbitrary browser agent or generate application actions from the DOM.
 See [React agents and semantic capabilities](https://binariedus.github.io/rcip/semantic-capabilities.html).
+
+An in-app agent or agentic UI can share these application capabilities with
+frontend tools and browser-automation consumers. Browser use is a valid use case:
+a custom integration can translate an agent's requests into RCIP discovery and
+invocation today. Generic cross-page discovery is future work, separate from
+the existing in-process client.
+
+[Run the standalone React starter](https://binariedus.github.io/rcip/react-starter.html)
+to explore reads, writes, validation, and host approval without a backend.
 
 ## React, MCP, and WebMCP
 
