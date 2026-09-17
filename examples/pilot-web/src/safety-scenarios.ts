@@ -337,5 +337,54 @@ export async function runSafetyScenarios(): Promise<
     await Promise.resolve()
     check('late-policy-does-not-execute', '1', String(executions))
   }
+  {
+    const schema = {
+      $id: 'https://example.test/rcip/shared-value',
+      type: 'object',
+      properties: { value: { type: 'string' } },
+      required: ['value'],
+      additionalProperties: false,
+    }
+    const definitions = ['first', 'second'].map((suffix) =>
+      defineRcipCapability<{ value: string }, { value: string }>({
+        ...capability,
+        id: `safety.${suffix}`,
+        inputSchema: schema,
+        outputSchema: schema,
+        usage: {
+          whenToUse: 'Read one value.',
+          examples: [{ description: 'A value', input: { value: 'example' } }],
+        },
+      }),
+    )
+    const host = createRcipRuntime(
+      defineRcipApplication({
+        protocolVersion: RCIP_PROTOCOL_VERSION,
+        application: {
+          id: 'safety.schemas',
+          name: 'Schema reuse',
+          description: 'Shared named schema.',
+        },
+        scopes: [scope],
+        capabilities: definitions,
+      }),
+      { policy: () => ({ decision: 'allow' }) },
+    )
+    for (const definition of definitions)
+      host.host.bindCapability(definition, { execute: (input) => input })
+    const outcomes = await Promise.all(
+      definitions.map((definition) =>
+        host.client.invoke({
+          capabilityId: definition.id,
+          input: { value: 'original' },
+        }),
+      ),
+    )
+    check(
+      'shared-named-schema',
+      'succeeded,succeeded',
+      outcomes.map(label).join(','),
+    )
+  }
   return checks
 }
