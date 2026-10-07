@@ -4,7 +4,11 @@ import Ajv2020, {
 } from "ajv/dist/2020.js";
 
 import type {
-  RcipClient,
+  RcipPreflightClient,
+  RcipPreflightBatch,
+  RcipPreflightOutcome,
+  RcipPreflightReport,
+  RcipRuntimeWithPreflight,
   RcipApplicationDefinition,
   RcipApplicationSnapshot,
   RcipAvailability,
@@ -20,7 +24,6 @@ import type {
   RcipInvocationRequest,
   RcipJsonValue,
   RcipPolicyDecision,
-  RcipRuntime,
   RcipRuntimeEvent,
   RcipRuntimeOptions,
   RcipSemanticContext,
@@ -220,7 +223,7 @@ function makeBinding<Input extends RcipJsonValue, Output extends RcipJsonValue>(
 export function createRcipRuntime(
   definition: RcipApplicationDefinition,
   options: RcipRuntimeOptions = {},
-): RcipRuntime {
+): RcipRuntimeWithPreflight {
   assertDefinition(definition);
   const catalogIdentities = new Map(
     definition.capabilities.map((capability) => [capability.id, capability]),
@@ -425,19 +428,69 @@ export function createRcipRuntime(
     }
   }
 
-  async function executeReservedInvocation(
+  function currentReadinessFailure(
+    request: RcipInvocationRequest,
+    invocationId: string,
+    binding: InternalBinding,
+    policyContext: RcipSemanticContext,
+  ): RcipInvocationFailed | null {
+    const capabilityId = request.capabilityId;
+    if (request.signal?.aborted) {
+      const outcome = failedOutcome(
+        invocationId,
+        capabilityId,
+        "EXECUTION_ABORTED",
+        "The capability invocation was cancelled.",
+      );
+      return outcome;
+    }
+
+    // Host callbacks may await navigation, permission changes, or an unmount.
+    if (bindings.get(capabilityId) !== binding) {
+      const outcome = failedOutcome(
+        invocationId,
+        capabilityId,
+        "CAPABILITY_UNBOUND",
+        "The capability binding changed during policy evaluation.",
+      );
+      return outcome;
+    }
+    if (!sameContext(policyContext)) {
+      const outcome = failedOutcome(
+        invocationId,
+        capabilityId,
+        "POLICY_DENIED",
+        "Application context changed. Request the operation again.",
+        "denied",
+      );
+      return outcome;
+    }
+    if (!safeAvailability(binding)?.available) {
+      const outcome = failedOutcome(
+        invocationId,
+        capabilityId,
+        "CAPABILITY_UNAVAILABLE",
+        "The capability is no longer available.",
+      );
+      return outcome;
+    }
+
+    return null;
+  }
+
+  async function evaluateReadiness(
     request: RcipInvocationRequest,
     confirmed: boolean,
     invocationId: string,
-  ): Promise<RcipInvocationOutcome> {
+    phase: "preflight" | "invoke",
+  ): Promise<RcipInvocationFailed | {
+    readonly status: "ready";
+    readonly capability: RcipCapabilityDefinition;
+    readonly binding: InternalBinding;
+    readonly policyContext: RcipSemanticContext;
+    readonly policyDecision: RcipPolicyDecision;
+  }> {
     const capabilityId = request.capabilityId;
-    emit({
-      timestamp: Date.now(),
-      invocationId,
-      capabilityId,
-      phase: "requested",
-    });
-
     const capability = definitions.get(capabilityId);
     if (!capability) {
       const outcome = failedOutcome(
@@ -446,7 +499,6 @@ export function createRcipRuntime(
         "CAPABILITY_NOT_FOUND",
         "The requested capability is not part of this application.",
       );
-      emitOutcome(outcome);
       return outcome;
     }
 
@@ -458,7 +510,6 @@ export function createRcipRuntime(
         "CAPABILITY_UNBOUND",
         "The requested capability has no live application binding.",
       );
-      emitOutcome(outcome);
       return outcome;
     }
 
@@ -470,7 +521,6 @@ export function createRcipRuntime(
         "CAPABILITY_UNAVAILABLE",
         availability?.reason ?? "The requested capability is not available.",
       );
-      emitOutcome(outcome);
       return outcome;
     }
 
@@ -483,7 +533,6 @@ export function createRcipRuntime(
         "failed",
         validationIssues(binding.validateInput.errors),
       );
-      emitOutcome(outcome);
       return outcome;
     }
 
@@ -494,7 +543,6 @@ export function createRcipRuntime(
         "EXECUTION_ABORTED",
         "The capability invocation was cancelled.",
       );
-      emitOutcome(outcome);
       return outcome;
     }
 
@@ -509,6 +557,7 @@ export function createRcipRuntime(
               input: immutableCopy(request.input),
               semanticContext: policyContext,
               confirmed,
+              phase,
             }),
             request.signal,
           )
@@ -529,53 +578,11 @@ export function createRcipRuntime(
           ? "The capability invocation was cancelled."
           : "The host application could not evaluate this operation safely.",
       );
-      emitOutcome(outcome);
       return outcome;
     }
 
-    if (request.signal?.aborted) {
-      const outcome = failedOutcome(
-        invocationId,
-        capabilityId,
-        "EXECUTION_ABORTED",
-        "The capability invocation was cancelled.",
-      );
-      emitOutcome(outcome);
-      return outcome;
-    }
-
-    // Host callbacks may await navigation, permission changes, or an unmount.
-    if (bindings.get(capabilityId) !== binding) {
-      const outcome = failedOutcome(
-        invocationId,
-        capabilityId,
-        "CAPABILITY_UNBOUND",
-        "The capability binding changed during policy evaluation.",
-      );
-      emitOutcome(outcome);
-      return outcome;
-    }
-    if (!sameContext(policyContext)) {
-      const outcome = failedOutcome(
-        invocationId,
-        capabilityId,
-        "POLICY_DENIED",
-        "Application context changed. Request the operation again.",
-        "denied",
-      );
-      emitOutcome(outcome);
-      return outcome;
-    }
-    if (!safeAvailability(binding)?.available) {
-      const outcome = failedOutcome(
-        invocationId,
-        capabilityId,
-        "CAPABILITY_UNAVAILABLE",
-        "The capability is no longer available.",
-      );
-      emitOutcome(outcome);
-      return outcome;
-    }
+    const changed = currentReadinessFailure(request, invocationId, binding, policyContext);
+    if (changed) return changed;
 
     if (policyDecision.decision === "deny") {
       const outcome = failedOutcome(
@@ -585,9 +592,39 @@ export function createRcipRuntime(
         policyDecision.reason ?? "The host application denied this operation.",
         "denied",
       );
-      emitOutcome(outcome);
       return outcome;
     }
+
+    return { status: "ready", capability, binding, policyContext, policyDecision };
+  }
+
+  async function executeReservedInvocation(
+    request: RcipInvocationRequest,
+    confirmed: boolean,
+    invocationId: string,
+  ): Promise<RcipInvocationOutcome> {
+    const capabilityId = request.capabilityId;
+    emit({
+      timestamp: Date.now(),
+      invocationId,
+      capabilityId,
+      phase: "requested",
+    });
+
+    const readiness = await evaluateReadiness(request, confirmed, invocationId, "invoke");
+    if (readiness.status !== "ready") {
+      emitOutcome(readiness);
+      return readiness;
+    }
+    const { capability, binding, policyContext, policyDecision } = readiness;
+    // Returning from the async assessment adds a microtask boundary. Recheck
+    // immediately before issuing a confirmation or entering the handler.
+    const changed = currentReadinessFailure(request, invocationId, binding, policyContext);
+    if (changed) {
+      emitOutcome(changed);
+      return changed;
+    }
+
 
     if (policyDecision.decision === "confirm") {
       if (confirmed) {
@@ -673,6 +710,13 @@ export function createRcipRuntime(
       capabilityId,
       phase: "started",
     });
+
+    // Event observers are host code too; they may synchronously change state.
+    const changedByObserver = currentReadinessFailure(request, invocationId, binding, policyContext);
+    if (changedByObserver) {
+      emitOutcome(changedByObserver);
+      return changedByObserver;
+    }
 
     try {
       const handlerOutput = await binding.execute(copyJson(request.input), {
@@ -799,7 +843,59 @@ export function createRcipRuntime(
     return executeInvocation(pending.request, true, pending.invocationId);
   }
 
-  const client: RcipClient = {
+  async function preflight(batch: RcipPreflightBatch): Promise<RcipPreflightReport> {
+    if (!Array.isArray(batch.requests) || batch.requests.length < 1 || batch.requests.length > 16) {
+      throw new RangeError("RCIP preflight requires between 1 and 16 independent proposals.");
+    }
+    const startRevision = revision;
+    const signal = batch.signal;
+    // Capture every input synchronously, before any asynchronous host check.
+    const prepared = batch.requests.map((proposed) => {
+      const capabilityId = typeof proposed?.capabilityId === "string" ? proposed.capabilityId : "unknown";
+      try {
+        if (typeof proposed?.capabilityId !== "string") throw new Error("Invalid proposal.");
+        return {
+          request: Object.freeze({ capabilityId, input: copyJson(proposed.input), signal }),
+          failure: null,
+        };
+      } catch {
+        const failure: RcipPreflightOutcome = {
+          status: "blocked",
+          capabilityId,
+          error: { code: "INPUT_INVALID", message: "The proposed capability input must be a JSON value." },
+        };
+        return { request: null, failure };
+      }
+    });
+    const outcomes = await Promise.all(prepared.map(async ({ request, failure }): Promise<RcipPreflightOutcome> => {
+      if (!request) return failure;
+      const result = await evaluateReadiness(request, false, "preflight", "preflight");
+      if (result.status !== "ready") {
+        return { status: "blocked", capabilityId: request.capabilityId, error: result.error };
+      }
+      if (result.policyDecision.decision === "confirm") {
+        return {
+          status: "confirmation_required",
+          capabilityId: request.capabilityId,
+          effect: result.capability.effect,
+          reason: result.policyDecision.reason ?? result.capability.description,
+        };
+      }
+      return { status: "ready", capabilityId: request.capabilityId, effect: result.capability.effect };
+    }));
+    const consistent = startRevision === revision;
+    // A ready answer must not outlive another check changing the application.
+    const finalOutcomes = consistent ? outcomes : outcomes.map((outcome): RcipPreflightOutcome =>
+      outcome.status === "blocked" ? outcome : {
+        status: "blocked",
+        capabilityId: outcome.capabilityId,
+        error: { code: "PREFLIGHT_STALE", message: "Application discovery changed during preflight. Check the current state again." },
+      });
+    return immutableCopy({ revision: startRevision, checkedAt: Date.now(), consistent, outcomes: finalOutcomes });
+  }
+
+  const client: RcipPreflightClient = {
+    preflight,
     getSnapshot: () => snapshot,
     listCapabilities(filter: RcipCapabilityFilter = {}) {
       return snapshot.capabilities.filter((capability) => {

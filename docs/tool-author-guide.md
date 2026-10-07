@@ -119,3 +119,55 @@ Verify tools against a packed RCIP package and real host bindings. Browser tests
 should cover discovery changes, successful outcomes, confirmation, denial,
 invalid input, unavailable capabilities, and tool behavior when the host
 unmounts a binding.
+
+
+## Optional concurrent preflight (2.0.4)
+
+`createRcipRuntime()` now supplies `client.preflight({ requests, signal? })`.
+Older client adapters remain valid; feature-detect `client.preflight` when accepting
+an arbitrary `RcipClient`. Protocol 1.0 and normal invocation remain unchanged.
+
+```ts
+const report = await runtime.client.preflight({
+  requests: [
+    { capabilityId: 'visits.schedule', input: firstVisit },
+    { capabilityId: 'visits.schedule', input: secondVisit },
+  ],
+})
+```
+
+The 1–16 independent proposals are checked concurrently and returned in input
+order. Each outcome is `ready`, `confirmation_required`, or `blocked`, with a
+safe reason and schema validation issues where applicable. The runtime checks
+binding, availability, input schema, cancellation, and host policy. The host can
+use availability for a disabled feature or missing credentials, and policy for
+input-specific restrictions. No operation handler runs, no invocation ID is
+reserved, no confirmation ticket is created, and no invocation event is emitted.
+A confirmation result means a future invocation needs host approval; it does not
+request or grant that approval.
+
+Policies receive optional `phase: 'preflight' | 'invoke'`. They must be read-only,
+concurrency-safe decision functions. Existing policy functions can ignore this
+field. Put actual effects in handlers, and enforce authorization and validation
+again on the server. Do not return secrets or private record fields in reasons.
+Preflight can itself read host state to decide readiness; it is not an assurance
+that policy evaluation performs zero I/O.
+
+The report's revision identifies discovery at the start. If discovery changes
+while the batch is pending, `consistent` is false and positive results become
+`PREFLIGHT_STALE`. This is not a database snapshot, reservation, transaction,
+simulation of successive writes, or an authorization token. Two proposals may
+individually be ready yet conflict when executed. Check dependent proposals only
+after their inputs are known. Invocation always checks current state again.
+
+Preflight is optional. Call `invoke` directly when the operation is already
+known; it checks and executes in one round trip. A consumer can use one preflight
+batch to show all problems in a proposed plan, but should not automatically add
+an extra preflight before every action. Do not execute effects or fetch private
+data concurrently with a check and then discard a failed result: discarding a
+response does not undo a write or retract disclosed information.
+
+An aborted batch reports cancellation without executing handlers. Individual
+policy promises may continue if their implementation does not cancel its I/O;
+they must therefore remain effect-free. The SDK workbench's **Check readiness**
+button demonstrates assessment separately from invocation and host approval.

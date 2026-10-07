@@ -1,6 +1,18 @@
 # Changelog
 
-All notable RCIP changes are documented here. RCIP follows semantic versioning.
+All notable RCIP changes are documented here.
+
+## 2.0.4
+
+- Add optional `client.preflight` for 1–16 independent proposals checked concurrently without executing handlers or creating confirmation tickets.
+- Report ready, blocked, or confirmation-required outcomes with validation details, cancellation and discovery-revision freshness. Host policy receives an optional evaluation phase.
+- Preserve protocol 1.0, existing client adapters and direct invocation; every invocation still checks current state. Preflight is advisory, not a reservation, authorization token or transaction.
+- Recheck binding, availability and context after asynchronous readiness evaluation and synchronous host event observers.
+- Add a readiness control to the pilot workbench, composed browser coverage and integration guidance.
+- Refresh affected dependency resolutions to clear the release dependency audit, retaining the reviewed Rollup toolchain.
+- Stabilize packed consumer verification with the lockfile's Rollup version and explicit build dependencies, including after Vite preview changes process environment.
+
+The maintainer selected 2.0.4 for this backwards-compatible, optional API addition.
 
 ## 2.0.3
 

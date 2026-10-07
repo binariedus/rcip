@@ -24,7 +24,7 @@ const temporaryRoot = mkdtempSync(join(tmpdir(), 'rcip-consumers-'))
 // One isolated npm cache per registry run, reused across the React consumers.
 const consumerEnv = registryVersion
   ? { ...process.env, npm_config_cache: join(temporaryRoot, 'npm-cache'), npm_config_registry: 'https://registry.npmjs.org/' }
-  : process.env
+  : { ...process.env }
 
 function run(command, args, cwd, capture = false) {
   const result = spawnSync(command, args, {
@@ -65,6 +65,11 @@ async function createConsumer(versionName, reactVersion, reactTypesVersion, pack
       react: reactVersion,
       'react-dom': reactVersion,
     },
+    // Fresh consumers must use the reviewed bundler from this lockfile.
+    // Otherwise a transitive Rollup release changes the acceptance lane itself.
+    overrides: {
+      rollup: JSON.parse(readFileSync(join(workspaceRoot, 'node_modules/rollup/package.json'), 'utf8')).version,
+    },
     devDependencies: {
       '@types/react': reactTypesVersion,
       '@types/react-dom': reactTypesVersion,
@@ -97,7 +102,7 @@ async function createConsumer(versionName, reactVersion, reactTypesVersion, pack
 
   run(
     'npm',
-    ['install', '--ignore-scripts', '--no-audit', '--no-fund'],
+    ['install', '--include=dev', '--ignore-scripts', '--no-audit', '--no-fund'],
     fixtureRoot,
   )
   if (registryVersion) {
