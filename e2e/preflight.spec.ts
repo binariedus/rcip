@@ -1,0 +1,31 @@
+import { expect, test } from '@playwright/test'
+
+test('workbench checks proposed changes without execution or a confirmation ticket', async ({ page }) => {
+  await page.goto('/')
+  await page.getByTestId('console-capability-todos.create').click()
+  await page.getByRole('button', { name: 'Check readiness', exact: true }).click()
+  await expect(page.getByTestId('console-preflight')).toContainText('confirmation_required')
+  await expect(page.getByTestId('console-confirmation')).toHaveCount(0)
+  await expect(page.getByTestId('console-result')).toHaveCount(0)
+  await expect(page.getByText('Book train tickets', { exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Invoke capability', exact: true }).click()
+  await expect(page.getByTestId('console-confirmation')).toBeVisible()
+  await page.getByRole('button', { name: 'Confirm capability', exact: true }).click()
+  await expect(page.getByTestId('console-outcome')).toHaveText('succeeded')
+  await expect(page.getByText('Book train tickets', { exact: true })).toBeVisible()
+})
+
+test('workbench reports missing input, an unbound operation, and a ready read', async ({ page }) => {
+  await page.goto('/')
+  await page.getByTestId('console-capability-todos.create').click()
+  await page.getByLabel('Capability input (JSON)').fill('{}')
+  await page.getByRole('button', { name: 'Check readiness', exact: true }).click()
+  await expect(page.getByTestId('console-preflight')).toContainText('INPUT_INVALID')
+  await page.getByTestId('console-capability-profile.export').click()
+  await page.getByRole('button', { name: 'Check readiness', exact: true }).click()
+  await expect(page.getByTestId('console-preflight')).toContainText('CAPABILITY_UNBOUND')
+  await page.getByTestId('console-capability-todos.list').click()
+  await page.getByRole('button', { name: 'Check readiness', exact: true }).click()
+  await expect(page.getByTestId('console-preflight')).toContainText('"status": "ready"')
+  await expect(page.getByTestId('console-result')).toHaveCount(0)
+})

@@ -441,3 +441,18 @@ dependency updates.
 ## License
 
 Apache-2.0
+
+## Optional readiness checks (2.0.4)
+
+`createRcipRuntime()` also exposes `client.preflight({ requests, signal? })`. It
+assesses 1–16 independent proposed operations concurrently without executing their
+handlers or creating confirmation tickets. Results report readiness, required
+confirmation, or a blocking reason such as missing input, unavailable credentials,
+or host policy denial. Older client adapters can omit this optional method.
+
+Use it to review several proposals together; direct `invoke` still checks and
+executes in one call. A preflight result is advisory, never an authorization token,
+reservation, or transaction. Invocation rechecks current state. Host policies must
+be effect-free and safe to call concurrently. See the
+[tool author guide](https://binariedus.github.io/rcip/tool-author-guide.html) for
+state freshness, cancellation, and compatibility details.

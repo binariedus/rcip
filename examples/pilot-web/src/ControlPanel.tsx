@@ -6,6 +6,7 @@ import {
   type RcipInvocationOutcome,
   type RcipJsonValue,
   type RcipRuntime,
+  type RcipPreflightReport,
   useRcipSnapshot,
 } from '@binaried/rcip'
 
@@ -85,24 +86,47 @@ export function ControlPanel({ runtime }: ControlPanelProps) {
   const [pending, setPending] =
     useState<RcipInvocationConfirmationRequired | null>(null)
   const [busy, setBusy] = useState(false)
+  const [preflight, setPreflight] = useState<RcipPreflightReport | null>(null)
 
   function selectCapability(capability: RcipCapabilitySnapshot): void {
     setSelectedId(capability.id)
     setInput(formatJson(CAPABILITY_SAMPLES[capability.id] ?? {}))
     setLocalError(null)
     setOutcome(null)
+    setPreflight(null)
     setPending(null)
   }
 
   function loadSample(): void {
     setInput(formatJson(selectedSample))
     setLocalError(null)
+    setPreflight(null)
+  }
+
+  async function checkReadiness(): Promise<void> {
+    if (!selectedCapability || busy || pending || !runtime.client.preflight) return
+    setLocalError(null)
+    setPreflight(null)
+    setOutcome(null)
+    setBusy(true)
+    try {
+      const parsed: unknown = JSON.parse(input)
+      if (!isJsonValue(parsed)) throw new Error('Input must contain only JSON values.')
+      setPreflight(await runtime.client.preflight({
+        requests: [{ capabilityId: selectedCapability.id, input: parsed }],
+      }))
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : 'Preflight failed.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   async function invokeCapability(): Promise<void> {
     if (!selectedCapability || busy || pending) return
     setLocalError(null)
     setOutcome(null)
+    setPreflight(null)
 
     let parsed: unknown
     try {
@@ -235,6 +259,7 @@ export function ControlPanel({ runtime }: ControlPanelProps) {
               onChange={(event) => {
                 setInput(event.target.value)
                 setLocalError(null)
+                setPreflight(null)
               }}
             />
             {localError ? (
@@ -243,6 +268,12 @@ export function ControlPanel({ runtime }: ControlPanelProps) {
               </p>
             ) : null}
             <div className="console-actions">
+              {runtime.client.preflight ? <button
+                type="button"
+                className="button button-secondary"
+                disabled={Boolean(pending) || busy}
+                onClick={() => void checkReadiness()}
+              >Check readiness</button> : null}
               <button
                 type="button"
                 className="button button-secondary"
@@ -260,6 +291,12 @@ export function ControlPanel({ runtime }: ControlPanelProps) {
                 {busy ? 'Running…' : 'Invoke capability'}
               </button>
             </div>
+
+            {preflight ? <section className="console-outcome">
+              <h4>Readiness only — nothing executed</h4>
+              <p>Advisory result. Invocation checks again against current state.</p>
+              <pre data-testid="console-preflight">{formatJson(preflight)}</pre>
+            </section> : null}
 
             {pending ? (
               <div

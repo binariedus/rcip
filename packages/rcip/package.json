@@ -1,6 +1,6 @@
 {
   "name": "@binaried/rcip",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "React capabilities for AI assistants, UI agents, and tool calling—with live context, validation, policy, and confirmation.",
   "license": "Apache-2.0",
   "keywords": [

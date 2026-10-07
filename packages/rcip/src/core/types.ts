@@ -231,6 +231,8 @@ export type RcipInvocationOutcome =
 
 /** Current inputs supplied to the host's authoritative policy. */
 export interface RcipPolicyContext {
+  /** New runtimes identify advisory checks; policy must not perform effects. */
+  readonly phase?: 'preflight' | 'invoke'
   readonly capability: RcipCapabilitySnapshot
   readonly input: RcipJsonValue
   readonly semanticContext: RcipSemanticContext
@@ -280,6 +282,8 @@ export interface RcipRuntimeOptions {
  * Host-only binding and policy controls are intentionally excluded.
  */
 export interface RcipClient {
+  /** Optional extension for compatibility with existing client adapters. */
+  readonly preflight?: RcipPreflightClient['preflight']
   readonly getSnapshot: () => RcipApplicationSnapshot
   readonly listCapabilities: (
     filter?: RcipCapabilityFilter,
@@ -311,4 +315,58 @@ export interface RcipHostController {
 export interface RcipRuntime {
   readonly client: RcipClient
   readonly host: RcipHostController
+}
+
+/** A proposed operation to assess without invoking its handler. */
+export interface RcipPreflightRequest {
+  readonly capabilityId: string
+  readonly input: RcipJsonValue
+}
+
+/** Bounded independent proposals; this is not an ordered execution plan. */
+export interface RcipPreflightBatch {
+  readonly requests: readonly RcipPreflightRequest[]
+  readonly signal?: AbortSignal
+}
+
+/** An advisory result, never an execution receipt or authorization token. */
+export type RcipPreflightOutcome =
+  | {
+      readonly status: 'ready'
+      readonly capabilityId: string
+      readonly effect: RcipCapabilityEffect
+    }
+  | {
+      readonly status: 'confirmation_required'
+      readonly capabilityId: string
+      readonly effect: RcipCapabilityEffect
+      readonly reason: string
+    }
+  | {
+      readonly status: 'blocked'
+      readonly capabilityId: string
+      readonly error: {
+        readonly code: RcipErrorCode | 'PREFLIGHT_STALE'
+        readonly message: string
+        readonly validationIssues?: readonly RcipValidationIssue[]
+      }
+    }
+
+/** Results retain proposal order even though independent checks run concurrently. */
+export interface RcipPreflightReport {
+  readonly revision: number
+  readonly checkedAt: number
+  /** Whether the discovery revision stayed unchanged throughout this check. */
+  readonly consistent: boolean
+  readonly outcomes: readonly RcipPreflightOutcome[]
+}
+
+/** Consumer surface implemented by runtimes supporting the preflight extension. */
+export interface RcipPreflightClient extends RcipClient {
+  readonly preflight: (batch: RcipPreflightBatch) => Promise<RcipPreflightReport>
+}
+
+/** A new runtime retains the old base interface while advertising its extension. */
+export interface RcipRuntimeWithPreflight extends RcipRuntime {
+  readonly client: RcipPreflightClient
 }
