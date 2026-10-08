@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 const origin = 'https://binariedus.github.io'
 const home = `${origin}/rcip/`
 const description =
-  'React capabilities for AI assistants, UI agents, and tool calling—with live context, validation, policy, and confirmation.'
+  'Typed application capabilities for AI agents: explicit operations, controlled data exposure, and a framework-neutral runtime with React bindings.'
 export default defineConfig({
   title: 'RCIP',
   description,
@@ -49,8 +49,8 @@ export default defineConfig({
           codeRepository: 'https://github.com/binariedus/rcip',
           programmingLanguage: 'TypeScript',
           license: 'https://www.apache.org/licenses/LICENSE-2.0',
-          version: '2.0.3',
-          runtimePlatform: 'React',
+          version: '2.0.5',
+          runtimePlatform: 'JavaScript / TypeScript; React bindings',
         }),
       ],
     ]
@@ -77,6 +77,7 @@ export default defineConfig({
             text: 'Why semantic capabilities?',
             link: '/semantic-capabilities',
           },
+          { text: 'Measured workflow benchmark', link: '/benchmark' },
           { text: 'Finance case study', link: '/finance-case-study' },
           { text: 'RCIP and neighboring protocols', link: '/ecosystem' },
         ],

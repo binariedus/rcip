@@ -1,0 +1,43 @@
+RCIP workflow benchmark — second iteration
+
+Frozen comparison: Browser Use 0.13.11 UI agent; custom RCIP consumer with direct invocation;
+custom RCIP consumer with one optional readiness batch before each proposed write batch.
+Both RCIP arms use the same packed 2.1.0-rc.1 package. This is an ablation of preflight,
+not a 2.0.3-to-2.1 performance comparison. Main differences from v1 are the longer task,
+a new reschedule capability, server slot checks, and a live server policy assessment.
+
+Task: assign an open lift repair to Mira, assign a valve repair to Lena, reschedule
+Omar's existing door-closer visit while preserving its technician and note. Leave all
+other requests untouched, including near-duplicate units and closed reports. No messages.
+Each run starts with a fresh seeded 24-record backend session and a fresh browser.
+IDs change by repetition. Expected final state is independently checked against all
+24 original records, all three exact assignments, note histories, revisions, returned
+IDs, and exactly three saved writes. Shared server validation applies to UI and RCIP.
+
+Pilot: one complete three-arm run excluded from final statistics. Final: five fresh
+matched triplets, rotating arm order. Same gpt-5.4-mini-2026-03-17 snapshot, reasoning low,
+strict structured JSON, maximum 5 actions per decision, 40 decisions, 420 seconds.
+Browser Use receives rendered DOM and screenshots and may use normal UI tools; it may
+not inspect hidden RCIP/global state or call backend APIs. RCIP gets app-authored schemas
+and bounded operational outputs. It may invoke only the actual SDK client bridge.
+Different consumer prompts/orchestration are an explicit limitation: this compares two
+complete approaches, not solely the cost of DOM lookup versus function invocation.
+
+Timing begins after browser/app ready and ends at the final structured response.
+Browser startup and before/after screenshots are excluded and reported separately.
+Actual API requests/responses, usage, action traces, screenshots, before/after backend
+states and audit receipts are retained. Provider caching and network variability remain.
+Completion actions are excluded from normalized tool-action totals. UI select-option
+inspection counts as an action. RCIP preflight calls are reported separately from invokes.
+No added UI waits, simulated network latency or artificial pagination beyond normal
+six-row paging. Host concurrency validation uses a separate controlled HTTP barrier,
+never a timed agent run. No cross-run request reuse or successful-only filtering.
+
+Interpretation: success means the required final state, not a credible-looking summary.
+Failures remain in the published table. Similar tasks from one synthetic app cannot prove
+universal speed, production reliability, payment safety, or a privacy/security guarantee.
+Data exposure counts cover selected synthetic contact markers actually sent to the model;
+RCIP still sends operational record IDs, units, issue descriptions and technician names.
+Preflight is advisory and cannot reserve a technician, roll back effects, or authorize
+later requests. The backend checks again at mutation time. The feature is not expected
+to speed up every successful write; it is designed to surface readiness problems together.

@@ -5,7 +5,7 @@ description: Compare application capabilities, browser tool exposure, agent even
 # React capabilities, MCP, and WebMCP
 
 These technologies overlap in goals but address different integration boundaries.
-This comparison was checked against their official documentation in September 2026.
+This comparison was checked against the official WebMCP draft and Chrome guidance on October 8, 2026.
 
 | Technology | Primary concern | Relationship to RCIP |
 | --- | --- | --- |
@@ -27,7 +27,7 @@ RCIP's value is a coherent application capability model that can serve multiple
 consumers without depending on browser support. Direct WebMCP may be sufficient
 for a smaller browser-specific integration.
 
-**Direct MCP and WebMCP adapters are planned and are not included in RCIP 2.0.3.**
+**Direct MCP and WebMCP adapters are planned and are not included in RCIP 2.0.5.**
 A future adapter should preserve
 `client.invoke`, application-selected exposure, and trusted confirmation rather
 than exporting raw handlers. No MCP transport adapter is included either.
