@@ -141,6 +141,6 @@
     "ajv": "^8.17.1"
   },
   "devDependencies": {
-    "react": "^19.1.1"
+    "react": "^19.3.0"
   }
 }
