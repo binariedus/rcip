@@ -1,0 +1,613 @@
+{
+  "lanes": {
+    "browser": {
+      "successes": 5,
+      "runs": 5,
+      "medianSeconds": 72.85498935700161,
+      "minSeconds": 69.38777958002174,
+      "maxSeconds": 111.1706827559974,
+      "medianModelRequests": 16,
+      "medianOperations": 32,
+      "medianPreflightCalls": 0,
+      "medianPreflightSeconds": 0,
+      "totalPromptTokens": 889199,
+      "totalOutputTokens": 35911,
+      "medianResidentMarkers": 10,
+      "medianEmailMarkers": 10,
+      "medianPhoneMarkers": 3
+    },
+    "rcip-direct": {
+      "successes": 5,
+      "runs": 5,
+      "medianSeconds": 9.433965605974663,
+      "minSeconds": 7.918036003946327,
+      "maxSeconds": 46.24073058797512,
+      "medianModelRequests": 4,
+      "medianOperations": 8,
+      "medianPreflightCalls": 0,
+      "medianPreflightSeconds": 0,
+      "totalPromptTokens": 59252,
+      "totalOutputTokens": 3819,
+      "medianResidentMarkers": 0,
+      "medianEmailMarkers": 0,
+      "medianPhoneMarkers": 0
+    },
+    "rcip-preflight": {
+      "successes": 5,
+      "runs": 5,
+      "medianSeconds": 9.389090716955252,
+      "minSeconds": 7.463935090985615,
+      "maxSeconds": 16.701786032004748,
+      "medianModelRequests": 5,
+      "medianOperations": 8,
+      "medianPreflightCalls": 2,
+      "medianPreflightSeconds": 0.008391273964662105,
+      "totalPromptTokens": 107478,
+      "totalOutputTokens": 4761,
+      "medianResidentMarkers": 0,
+      "medianEmailMarkers": 0,
+      "medianPhoneMarkers": 0
+    }
+  },
+  "pairs": [
+    {
+      "repetition": 1,
+      "browserSeconds": 111.1706827559974,
+      "directSeconds": 46.24073058797512,
+      "preflightSeconds": 9.389090716955252,
+      "browserOverDirect": 2.4041722815016957,
+      "browserOverPreflight": 11.84040990841001
+    },
+    {
+      "repetition": 2,
+      "browserSeconds": 71.85919439600548,
+      "directSeconds": 7.918036003946327,
+      "preflightSeconds": 7.463935090985615,
+      "browserOverDirect": 9.075381112209019,
+      "browserOverPreflight": 9.62752134363972
+    },
+    {
+      "repetition": 3,
+      "browserSeconds": 74.80497232603375,
+      "directSeconds": 9.56229686702136,
+      "preflightSeconds": 16.195208329008892,
+      "browserOverDirect": 7.822908383447353,
+      "browserOverPreflight": 4.618957089427675
+    },
+    {
+      "repetition": 4,
+      "browserSeconds": 69.38777958002174,
+      "directSeconds": 9.433965605974663,
+      "preflightSeconds": 8.494669587002136,
+      "browserOverDirect": 7.355102030060135,
+      "browserOverPreflight": 8.168390644198025
+    },
+    {
+      "repetition": 5,
+      "browserSeconds": 72.85498935700161,
+      "directSeconds": 8.011866228014696,
+      "preflightSeconds": 16.701786032004748,
+      "browserOverDirect": 9.093385646187299,
+      "browserOverPreflight": 4.362107694194708
+    }
+  ],
+  "medianPairedBrowserOverDirect": 7.822908383447353,
+  "medianPairedBrowserOverPreflight": 8.168390644198025,
+  "allUsageIncludingPilot": {
+    "requests": 160,
+    "promptTokens": 1256805,
+    "completionTokens": 52735,
+    "cachedTokens": 886784
+  },
+  "finalUsage": {
+    "modelRequests": 135,
+    "promptTokens": 1055929,
+    "outputTokens": 44491,
+    "cachedTokens": 753408
+  },
+  "providerErrors": [],
+  "checks": {
+    "uiAndSdkExactFinalState": true,
+    "preflightDoesNotMutate": {
+      "revision": 13,
+      "checkedAt": 1791401448945,
+      "consistent": true,
+      "outcomes": [
+        {
+          "status": "ready",
+          "capabilityId": "visits.schedule",
+          "effect": "write"
+        },
+        {
+          "status": "ready",
+          "capabilityId": "visits.schedule",
+          "effect": "write"
+        },
+        {
+          "status": "ready",
+          "capabilityId": "visits.reschedule",
+          "effect": "write"
+        }
+      ]
+    },
+    "mixed": {
+      "revision": 16,
+      "checkedAt": 1791401448990,
+      "consistent": true,
+      "outcomes": [
+        {
+          "status": "blocked",
+          "capabilityId": "visits.schedule",
+          "error": {
+            "code": "INPUT_INVALID",
+            "message": "The capability input does not match its declared schema.",
+            "validationIssues": [
+              {
+                "instancePath": "",
+                "keyword": "required",
+                "message": "must have required property 'requestId'"
+              },
+              {
+                "instancePath": "",
+                "keyword": "required",
+                "message": "must have required property 'technicianId'"
+              },
+              {
+                "instancePath": "",
+                "keyword": "required",
+                "message": "must have required property 'expectedRevision'"
+              },
+              {
+                "instancePath": "",
+                "keyword": "required",
+                "message": "must have required property 'date'"
+              },
+              {
+                "instancePath": "",
+                "keyword": "required",
+                "message": "must have required property 'window'"
+              },
+              {
+                "instancePath": "",
+                "keyword": "required",
+                "message": "must have required property 'note'"
+              }
+            ]
+          }
+        },
+        {
+          "status": "blocked",
+          "capabilityId": "visits.notify",
+          "error": {
+            "code": "CAPABILITY_UNAVAILABLE",
+            "message": "Notification provider credentials are not configured."
+          }
+        },
+        {
+          "status": "blocked",
+          "capabilityId": "visits.reschedule",
+          "error": {
+            "code": "POLICY_DENIED",
+            "message": "STALE_REVISION: Refresh the request before saving."
+          }
+        }
+      ]
+    },
+    "confirmationWithoutTicket": {
+      "revision": 17,
+      "checkedAt": 1791401449068,
+      "consistent": true,
+      "outcomes": [
+        {
+          "status": "confirmation_required",
+          "capabilityId": "visits.notify",
+          "effect": "external",
+          "reason": "Approve sending this visit notification."
+        }
+      ]
+    },
+    "invokeRechecks": {
+      "status": "denied",
+      "invocationId": "invocation_muyi64lu_1",
+      "capabilityId": "visits.schedule",
+      "error": {
+        "code": "POLICY_DENIED",
+        "message": "FEATURE_DISABLED: Scheduling is disabled for this workspace."
+      }
+    },
+    "featureUnavailable": {
+      "revision": 14,
+      "checkedAt": 1791401449284,
+      "consistent": true,
+      "outcomes": [
+        {
+          "status": "blocked",
+          "capabilityId": "visits.schedule",
+          "error": {
+            "code": "CAPABILITY_UNAVAILABLE",
+            "message": "Scheduling is disabled for this workspace."
+          }
+        }
+      ]
+    },
+    "concurrentPolicyRequests": 3,
+    "staleBatch": {
+      "revision": 13,
+      "checkedAt": 1791401449504,
+      "consistent": false,
+      "outcomes": [
+        {
+          "status": "blocked",
+          "capabilityId": "visits.schedule",
+          "error": {
+            "code": "PREFLIGHT_STALE",
+            "message": "Application discovery changed during preflight. Check the current state again."
+          }
+        },
+        {
+          "status": "blocked",
+          "capabilityId": "visits.schedule",
+          "error": {
+            "code": "PREFLIGHT_STALE",
+            "message": "Application discovery changed during preflight. Check the current state again."
+          }
+        },
+        {
+          "status": "blocked",
+          "capabilityId": "visits.reschedule",
+          "error": {
+            "code": "PREFLIGHT_STALE",
+            "message": "Application discovery changed during preflight. Check the current state again."
+          }
+        }
+      ]
+    },
+    "aborted": {
+      "revision": 14,
+      "checkedAt": 1791401449510,
+      "consistent": true,
+      "outcomes": [
+        {
+          "status": "blocked",
+          "capabilityId": "visits.schedule",
+          "error": {
+            "code": "EXECUTION_ABORTED",
+            "message": "The capability invocation was cancelled."
+          }
+        },
+        {
+          "status": "blocked",
+          "capabilityId": "visits.schedule",
+          "error": {
+            "code": "EXECUTION_ABORTED",
+            "message": "The capability invocation was cancelled."
+          }
+        },
+        {
+          "status": "blocked",
+          "capabilityId": "visits.reschedule",
+          "error": {
+            "code": "EXECUTION_ABORTED",
+            "message": "The capability invocation was cancelled."
+          }
+        }
+      ]
+    },
+    "batchBoundsEnforced": true,
+    "roleAndServerGuard": true,
+    "slotCollisionDenied": {
+      "status": "denied",
+      "invocationId": "invocation_muyi6501_1",
+      "capabilityId": "visits.reschedule",
+      "error": {
+        "code": "POLICY_DENIED",
+        "message": "SLOT_OCCUPIED: The technician already has a visit in this window."
+      }
+    },
+    "pageErrors": [],
+    "checkedAt": "2026-10-07T19:30:49.685Z"
+  },
+  "sourceFrozen": true,
+  "rows": [
+    {
+      "run": "final-dispatch-session-1-browser",
+      "lane": "browser",
+      "repetition": 1,
+      "passed": true,
+      "seconds": 111.1706827559974,
+      "modelRequests": 17,
+      "operations": 35,
+      "preflightCalls": 0,
+      "preflightSeconds": 0,
+      "promptTokens": 187284,
+      "outputTokens": 7512,
+      "cachedTokens": 130816,
+      "imageInputs": 17,
+      "residentMarkers": 10,
+      "emailMarkers": 10,
+      "phoneMarkers": 3,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-1-rcip-direct",
+      "lane": "rcip-direct",
+      "repetition": 1,
+      "passed": true,
+      "seconds": 46.24073058797512,
+      "modelRequests": 3,
+      "operations": 8,
+      "preflightCalls": 0,
+      "preflightSeconds": 0,
+      "promptTokens": 8754,
+      "outputTokens": 741,
+      "cachedTokens": 6400,
+      "imageInputs": 0,
+      "residentMarkers": 0,
+      "emailMarkers": 0,
+      "phoneMarkers": 0,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-1-rcip-preflight",
+      "lane": "rcip-preflight",
+      "repetition": 1,
+      "passed": true,
+      "seconds": 9.389090716955252,
+      "modelRequests": 5,
+      "operations": 8,
+      "preflightCalls": 2,
+      "preflightSeconds": 0.008391273964662105,
+      "promptTokens": 15746,
+      "outputTokens": 867,
+      "cachedTokens": 12032,
+      "imageInputs": 0,
+      "residentMarkers": 0,
+      "emailMarkers": 0,
+      "phoneMarkers": 0,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-2-browser",
+      "lane": "browser",
+      "repetition": 2,
+      "passed": true,
+      "seconds": 71.85919439600548,
+      "modelRequests": 16,
+      "operations": 33,
+      "preflightCalls": 0,
+      "preflightSeconds": 0,
+      "promptTokens": 174100,
+      "outputTokens": 6787,
+      "cachedTokens": 121856,
+      "imageInputs": 16,
+      "residentMarkers": 10,
+      "emailMarkers": 10,
+      "phoneMarkers": 3,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-2-rcip-direct",
+      "lane": "rcip-direct",
+      "repetition": 2,
+      "passed": true,
+      "seconds": 7.918036003946327,
+      "modelRequests": 4,
+      "operations": 9,
+      "preflightCalls": 0,
+      "preflightSeconds": 0,
+      "promptTokens": 11867,
+      "outputTokens": 739,
+      "cachedTokens": 8704,
+      "imageInputs": 0,
+      "residentMarkers": 0,
+      "emailMarkers": 0,
+      "phoneMarkers": 0,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-2-rcip-preflight",
+      "lane": "rcip-preflight",
+      "repetition": 2,
+      "passed": true,
+      "seconds": 7.463935090985615,
+      "modelRequests": 4,
+      "operations": 9,
+      "preflightCalls": 1,
+      "preflightSeconds": 0.006594968028366566,
+      "promptTokens": 12280,
+      "outputTokens": 626,
+      "cachedTokens": 8704,
+      "imageInputs": 0,
+      "residentMarkers": 0,
+      "emailMarkers": 0,
+      "phoneMarkers": 0,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-3-browser",
+      "lane": "browser",
+      "repetition": 3,
+      "passed": true,
+      "seconds": 74.80497232603375,
+      "modelRequests": 16,
+      "operations": 30,
+      "preflightCalls": 0,
+      "preflightSeconds": 0,
+      "promptTokens": 176013,
+      "outputTokens": 7661,
+      "cachedTokens": 123904,
+      "imageInputs": 16,
+      "residentMarkers": 10,
+      "emailMarkers": 10,
+      "phoneMarkers": 3,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-3-rcip-direct",
+      "lane": "rcip-direct",
+      "repetition": 3,
+      "passed": true,
+      "seconds": 9.56229686702136,
+      "modelRequests": 4,
+      "operations": 8,
+      "preflightCalls": 0,
+      "preflightSeconds": 0,
+      "promptTokens": 11655,
+      "outputTokens": 761,
+      "cachedTokens": 8704,
+      "imageInputs": 0,
+      "residentMarkers": 0,
+      "emailMarkers": 0,
+      "phoneMarkers": 0,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-3-rcip-preflight",
+      "lane": "rcip-preflight",
+      "repetition": 3,
+      "passed": true,
+      "seconds": 16.195208329008892,
+      "modelRequests": 10,
+      "operations": 8,
+      "preflightCalls": 4,
+      "preflightSeconds": 0.015701670025009662,
+      "promptTokens": 31628,
+      "outputTokens": 1164,
+      "cachedTokens": 26112,
+      "imageInputs": 0,
+      "residentMarkers": 0,
+      "emailMarkers": 0,
+      "phoneMarkers": 0,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-4-browser",
+      "lane": "browser",
+      "repetition": 4,
+      "passed": true,
+      "seconds": 69.38777958002174,
+      "modelRequests": 16,
+      "operations": 32,
+      "preflightCalls": 0,
+      "preflightSeconds": 0,
+      "promptTokens": 176142,
+      "outputTokens": 7070,
+      "cachedTokens": 123904,
+      "imageInputs": 16,
+      "residentMarkers": 10,
+      "emailMarkers": 10,
+      "phoneMarkers": 3,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-4-rcip-direct",
+      "lane": "rcip-direct",
+      "repetition": 4,
+      "passed": true,
+      "seconds": 9.433965605974663,
+      "modelRequests": 5,
+      "operations": 9,
+      "preflightCalls": 0,
+      "preflightSeconds": 0,
+      "promptTokens": 14872,
+      "outputTokens": 878,
+      "cachedTokens": 11008,
+      "imageInputs": 0,
+      "residentMarkers": 0,
+      "emailMarkers": 0,
+      "phoneMarkers": 0,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-4-rcip-preflight",
+      "lane": "rcip-preflight",
+      "repetition": 4,
+      "passed": true,
+      "seconds": 8.494669587002136,
+      "modelRequests": 4,
+      "operations": 8,
+      "preflightCalls": 1,
+      "preflightSeconds": 0.006375027005560696,
+      "promptTokens": 11625,
+      "outputTokens": 740,
+      "cachedTokens": 8704,
+      "imageInputs": 0,
+      "residentMarkers": 0,
+      "emailMarkers": 0,
+      "phoneMarkers": 0,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-5-browser",
+      "lane": "browser",
+      "repetition": 5,
+      "passed": true,
+      "seconds": 72.85498935700161,
+      "modelRequests": 16,
+      "operations": 30,
+      "preflightCalls": 0,
+      "preflightSeconds": 0,
+      "promptTokens": 175660,
+      "outputTokens": 6881,
+      "cachedTokens": 123904,
+      "imageInputs": 16,
+      "residentMarkers": 10,
+      "emailMarkers": 10,
+      "phoneMarkers": 3,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-5-rcip-direct",
+      "lane": "rcip-direct",
+      "repetition": 5,
+      "passed": true,
+      "seconds": 8.011866228014696,
+      "modelRequests": 4,
+      "operations": 7,
+      "preflightCalls": 0,
+      "preflightSeconds": 0,
+      "promptTokens": 12104,
+      "outputTokens": 700,
+      "cachedTokens": 8704,
+      "imageInputs": 0,
+      "residentMarkers": 0,
+      "emailMarkers": 0,
+      "phoneMarkers": 0,
+      "savedWrites": 3,
+      "error": null
+    },
+    {
+      "run": "final-dispatch-session-5-rcip-preflight",
+      "lane": "rcip-preflight",
+      "repetition": 5,
+      "passed": true,
+      "seconds": 16.701786032004748,
+      "modelRequests": 11,
+      "operations": 9,
+      "preflightCalls": 4,
+      "preflightSeconds": 0.022794266929849982,
+      "promptTokens": 36199,
+      "outputTokens": 1364,
+      "cachedTokens": 29952,
+      "imageInputs": 0,
+      "residentMarkers": 0,
+      "emailMarkers": 0,
+      "phoneMarkers": 0,
+      "savedWrites": 3,
+      "error": null
+    }
+  ]
+}

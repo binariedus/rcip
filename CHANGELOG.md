@@ -2,6 +2,13 @@
 
 All notable RCIP changes are documented here.
 
+## 2.0.5
+
+- Replace the GitHub and npm READMEs with concise, evidence-led positioning: explicit operations, app-controlled exposure, framework-neutral core, and integration available today.
+- Publish the synthetic dispatch workflow benchmark and its limitations; keep historical experimental results available without presenting them as separate products.
+- Clarify data minimization, predictable execution, and the boundaries of application policy and server authorization.
+- Update documentation discovery metadata and the current version. Runtime behavior, public APIs, protocol 1.0, and dependencies are unchanged from 2.0.4.
+
 ## 2.0.4
 
 - Add optional `client.preflight` for 1–16 independent proposals checked concurrently without executing handlers or creating confirmation tickets.

@@ -4,8 +4,8 @@ title: React UI agents, AI assistants, and tool calling
 description: Add React tool calling and UI-agent capabilities with live application context, JSON Schema validation, policy, and human confirmation.
 hero:
   name: RCIP
-  text: Give AI assistants the actions of your React app.
-  tagline: React capabilities for AI assistants, UI agents, and tool calling. Your application controls context, validation, policy, confirmation, and execution.
+  text: Give agents capabilities, not a guessing game.
+  tagline: Your app defines the operations, chooses the data, and enforces the rules. Framework-neutral core; React bindings when you need them.
   actions:
     - theme: brand
       text: Get started
@@ -19,7 +19,7 @@ hero:
       link: https://github.com/binariedus/rcip
 features:
   - title: Stable product intent
-    details: Declare capabilities such as todos.create. Bind them to existing behavior without exposing the DOM or component instances.
+    details: Declare capabilities such as visits.schedule. Bind them to existing behavior without exposing the DOM or component instances.
   - title: Application-owned decisions
     details: Validate schemas, check current availability, apply policy, and resolve confirmation in trusted host UI.
   - title: Choose your consumer
@@ -32,7 +32,7 @@ features:
 npm install @binaried/rcip
 ```
 
-RCIP 2.0.3 implements the in-process protocol 1.0. Its core is framework-neutral;
+RCIP 2.0.5 implements the in-process protocol 1.0. Its core is framework-neutral;
 React bindings support React 18 and 19. Optional Assist and Explorer have separate imports.
 
 Start with a single useful action, then share the same capability contract across
@@ -55,3 +55,16 @@ Your consumer supplies the model/provider or browser-agent integration.
 RCIP shares the goal of exposing useful application tools. It currently runs
 in-process; **direct MCP and WebMCP adapters are planned and are not included**.
 [Compare the integration boundaries](./ecosystem).
+
+## Less UI guesswork, more deliberate execution
+
+A scheduling agent needs a scheduling operation—not every contact visible on the
+page. RCIP exposes the capabilities and outputs you choose, with validation,
+availability, application policy, and trusted confirmation around existing behavior.
+Your model/transport integration connects to the client; browser-native WebMCP
+support is not required.
+
+In our local dispatch workflow, Browser Use took **72.9s** median and RCIP took
+**9.4s**, including readiness checks. Both passed all five runs. The RCIP route
+omitted selected resident/contact markers from model-bound text.
+[See the benchmark and its limits](./benchmark) · [Understand data exposure](./security).

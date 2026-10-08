@@ -1,8 +1,8 @@
 # RCIP — React Capability Interface Protocol
 
-> Typed application capabilities for React AI assistants, UI agents, frontend tools, and browser-use integrations. Applications own live context, validation, availability, policy, confirmation, and execution.
+> Typed application operations for AI agents, with a framework-neutral core and optional React bindings. Applications own live context, validation, availability, policy, confirmation, and execution.
 
-RCIP implements in-process protocol 1.0 with a framework-neutral core and React 18/19 bindings. Consumers receive RcipClient for discovery and invocation; the application retains host controls. MCP/WebMCP adapters and generic browser discovery are future work. The hosted demo is deterministic and requires no account, provider, or backend. Confirmation is a cooperative application boundary, not a sandbox against browser automation or arbitrary same-page JavaScript.
+RCIP implements in-process protocol 1.0 with a framework-neutral core and React 18/19 bindings. RCIP 2.0.5 is available on npm. Consumers receive RcipClient for discovery, advisory preflight and invocation; the application retains host controls. MCP/WebMCP adapters and generic browser discovery are future work. The hosted demo is deterministic and requires no account, provider, or backend. Confirmation is a cooperative application boundary, not a sandbox against browser automation or arbitrary same-page JavaScript.
 
 ## Get started
 
@@ -21,6 +21,9 @@ RCIP implements in-process protocol 1.0 with a framework-neutral core and React 
 - [Protocol 1.0](https://binariedus.github.io/rcip/protocol.html): Normative in-process contract.
 
 ## Evaluate
+
+- [Measured dispatch workflow](https://binariedus.github.io/rcip/benchmark.html): Browser Use median 72.855s versus RCIP 9.389s with readiness checks; five successful runs each. Selected synthetic contact markers omitted by the RCIP integration. Retained pre-release candidate timings, not a universal speed or privacy claim.
+
 
 - [Architecture and browser use](https://binariedus.github.io/rcip/semantic-capabilities.html): Semantic application actions and browser-agent integration.
 - [Ecosystem](https://binariedus.github.io/rcip/ecosystem.html): RCIP, MCP, WebMCP, AG-UI, and A2UI boundaries.

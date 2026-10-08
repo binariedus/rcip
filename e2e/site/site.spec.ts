@@ -15,6 +15,9 @@ test('documentation is searchable, crawlable, and linked', async ({
     'compatibility.html',
     'finance-case-study.html',
     'ecosystem.html',
+    'benchmark.html',
+    'security.html',
+    'release-2.0.5.html',
     'changelog.html',
     'health-monitoring.html',
     'react-starter.html',
@@ -81,7 +84,7 @@ test('static demo works without a backend and survives layout changes', async ({
 
 test('documentation and demo fit a mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  for (const path of ['/rcip/', '/rcip/quick-start.html', '/rcip/demo/']) {
+  for (const path of ['/rcip/', '/rcip/quick-start.html', '/rcip/benchmark.html', '/rcip/security.html', '/rcip/demo/']) {
     await page.goto(path)
     expect(
       await page.evaluate(

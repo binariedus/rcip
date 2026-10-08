@@ -1,458 +1,74 @@
 # @binaried/rcip
 
-**React Capability Interface Protocol**
-
-RCIP exposes typed React application capabilities to AI assistants, UI agents,
-and tools. Your application controls live context, input/output validation,
-availability, policy, confirmation, and execution. Consumers invoke declared
-actions without DOM scraping. The core is framework-neutral; React bindings
-connect contracts to live behavior.
-
 [![npm](https://img.shields.io/npm/v/@binaried/rcip)](https://www.npmjs.com/package/@binaried/rcip)
-[![CI](https://github.com/binariedus/rcip/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/binariedus/rcip/actions/workflows/ci.yml)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 
-**[Documentation](https://binariedus.github.io/rcip/) ·
-[Quick start](https://binariedus.github.io/rcip/quick-start.html) ·
-[React starter](https://binariedus.github.io/rcip/react-starter.html) ·
-[Interactive demo](https://binariedus.github.io/rcip/demo/) ·
-[API reference](https://binariedus.github.io/rcip/api.html) ·
-[Source](https://github.com/binariedus/rcip)**
+**Give agents your app’s capabilities, not a guessing game.**
 
-Optional Assist and Explorer provide a ready-made conversation UI and read-only
-capability inspector. No model service, credentials, or remote transport is bundled.
-The hosted demo uses a clearly labeled deterministic adapter and needs no account.
+An agent asked to schedule a visit should request `visits.schedule`, not work out
+which of three similar buttons you meant. RCIP lets your application define the
+operation, validate the request, decide whether it is allowed, and return the
+information the agent actually needs.
 
-## React UI agents and tool calling
+That is the point: your product knows what its actions mean. Let it say so.
 
-| What you are building | How RCIP helps |
-| --- | --- |
-| A React AI assistant or UI agent | Discover the capabilities and application context the host chooses to expose. |
-| React tool calling or function calling | Map a consumer's tool request to `client.invoke`; validate its input and run existing application behavior. |
-| Browser agents interacting with a React app | Use semantic actions with live availability, application policy, and human confirmation. Your integration connects the agent to the RCIP client. |
-| An application tool registry | Share typed capability contracts across assistants, command palettes, and other consumers. |
+[Documentation](https://binariedus.github.io/rcip/) · [Quick start](https://binariedus.github.io/rcip/quick-start.html) · [Live demo](https://binariedus.github.io/rcip/demo/) · [Benchmark](https://binariedus.github.io/rcip/benchmark.html)
 
-A model/provider adapter remains application-owned. RCIP does not automatically
-connect an arbitrary browser agent or generate application actions from the DOM.
-See [React agents and semantic capabilities](https://binariedus.github.io/rcip/semantic-capabilities.html).
+## Less guessing. More control.
 
-An in-app agent or agentic UI can share these application capabilities with
-frontend tools and browser-automation consumers. Browser use is a valid use case:
-a custom integration can translate an agent's requests into RCIP discovery and
-invocation today. Generic cross-page discovery is future work, separate from
-the existing in-process client.
+- **Explicit operations.** Typed inputs and outputs, live availability, and structured outcomes replace coordinate and label interpretation. A moved button does not change the capability contract.
+- **Application-owned decisions.** Policy, validation, and trusted confirmation sit around your existing handlers. Optional batch preflight finds readiness problems without executing operations; invocation checks again.
+- **Deliberate data exposure.** Choose which context and results to share. Scheduling need not send the page’s resident contacts, unrelated records, or screenshots to a model.
+- **One contract, several consumers.** Share capabilities with your own assistant, agent integration, or command palette. Your integration supplies the model and transport; neither is bundled.
 
-[Run the standalone React starter](https://binariedus.github.io/rcip/react-starter.html)
-to explore reads, writes, validation, and host approval without a backend.
+This makes execution predictable; it does not make the model infallible. An agent
+can still choose the wrong operation or submit a wrong but valid value. The app’s
+guards and business rules decide what can actually happen.
 
-## React, MCP, and WebMCP
+## Measured on a real workflow
 
-RCIP addresses application-tooling problems also explored by the Model Context
-Protocol (MCP) and WebMCP. It provides an in-process capability runtime with React
-bindings. **Direct MCP and WebMCP adapters are planned and are not included in
-this release.** An existing MCP or WebMCP client needs an integration to invoke RCIP.
+A synthetic maintenance desk: assign two repairs, move a third visit, preserve
+its technician and note, and leave the other records untouched.
 
-[Compare RCIP, MCP, WebMCP, AG-UI, and A2UI](https://binariedus.github.io/rcip/ecosystem.html).
+| Five fresh runs per approach | Browser Use | RCIP, including readiness checks |
+| --- | ---: | ---: |
+| Median completion | 72.9s | 9.4s |
+| Independently verified successes | 5/5 | 5/5 |
+| Resident / email / phone markers in model-bound text, median | 10 / 10 / 3 | 0 / 0 / 0 |
 
-## An application integration
+**About 7.8× faster in this setup.** Same model, reset data, independent saved-state
+checks. Different runners and prompts mean this compares complete approaches,
+not an isolated library-speed test. Timings came from the pre-release candidate
+later shipped as 2.0.4. [Methodology, all runs, and limitations](https://binariedus.github.io/rcip/benchmark.html).
 
-HiNivaas uses RCIP to expose bounded current-view facts and authorized Finance
-navigation. The [Finance case study](https://binariedus.github.io/rcip/finance-case-study.html)
-explains those contracts and their limits. Try the independent
-[interactive demo](https://binariedus.github.io/rcip/demo/) to explore discovery,
-invocation, layout changes, and host confirmation.
+## Security comes from controlling the surface
 
-## The design in one minute
+RCIP lets you expose a bounded action instead of an entire screen. Its client
+validates contracts and applies application policy and confirmation before
+calling bound behavior. The application still owns server authorization,
+credential storage, and what its context, outputs, and logs reveal. RCIP is not
+a sandbox against arbitrary JavaScript in the page.
 
-```text
-                           live snapshot
-                  scopes + context + capabilities
-                                 │
-                                 ▼
-  consumer tool ────────► RcipClient
-                                 │
-                                 ▼
-                      schema + availability
-                                 │
-                                 ▼
-                       host policy / consent
-                                 │
-                                 ▼
-                     existing React binding ─────► application behavior
-                                 │
-                                 ▼
-                        validated outcome
+Zero contact markers in this benchmark means those selected fields were omitted,
+not that no information was shared or that every integration is automatically
+private. [Security and data exposure](https://binariedus.github.io/rcip/security.html).
+
+## Use it today—React is a binding, not the whole runtime
+
+```sh
+npm install @binaried/rcip
 ```
 
-RCIP never exposes the DOM, component instances, router internals, or a
-privileged host controller to tools. It ships no model provider, credentials,
-or mandatory network service.
-
-## Package surfaces
-
-| Import | Purpose |
-| --- | --- |
-| `@binaried/rcip/core` | Framework-neutral definitions, runtime, client, and protocol types |
-| `@binaried/rcip/react` | React provider, context binding, and capability hooks |
-| `@binaried/rcip/assist` | Headless Assist orchestration plus optional dot/chat UI |
-| `@binaried/rcip/explorer` | Optional read-only capability registry |
-| `@binaried/rcip` | Combined core and React exports |
-
-Default styles are explicit imports:
-
-```ts
-import '@binaried/rcip/assist/styles.css'
-import '@binaried/rcip/explorer/styles.css'
-```
-
-## Five-minute host integration
-
-### 1. Declare product intent
-
-Definitions are stable contracts, not component descriptions.
-
-```tsx
-import {
-  RCIP_PROTOCOL_VERSION,
-  createRcipRuntime,
-  defineRcipApplication,
-  defineRcipCapability,
-  defineRcipScope,
-} from '@binaried/rcip/core'
-
-const todosScope = defineRcipScope({
-  id: 'todos',
-  title: 'Todos',
-  description: 'The user task area.',
-})
-
-export const createTodo = defineRcipCapability<
-  { title: string },
-  { id: string; title: string }
->({
-  id: 'todos.create',
-  title: 'Create todo',
-  description: 'Create one task for the signed-in user.',
-  scopeIds: [todosScope.id],
-  effect: 'write',
-  inputSchema: {
-    type: 'object',
-    properties: { title: { type: 'string', minLength: 1 } },
-    required: ['title'],
-    additionalProperties: false,
-  },
-  outputSchema: {
-    type: 'object',
-    properties: {
-      id: { type: 'string' },
-      title: { type: 'string' },
-    },
-    required: ['id', 'title'],
-    additionalProperties: false,
-  },
-  usage: {
-    whenToUse: 'Use only when the user explicitly asks to add one task.',
-    examples: [
-      { description: 'Add a grocery task.', input: { title: 'Buy milk' } },
-    ],
-  },
-})
-
-const definition = defineRcipApplication({
-  protocolVersion: RCIP_PROTOCOL_VERSION,
-  application: {
-    id: 'example.todos',
-    name: 'Todos',
-    description: 'A small task application.',
-  },
-  scopes: [todosScope],
-  capabilities: [createTodo],
-})
-```
-
-### 2. Create the host runtime and policy
-
-```tsx
-export const runtime = createRcipRuntime(definition, {
-  policy({ capability, confirmed }) {
-    if (capability.effect === 'read' || confirmed) {
-      return { decision: 'allow' }
-    }
-    return {
-      decision: 'confirm',
-      reason: 'State-changing actions require user confirmation.',
-    }
-  },
-})
-```
-
-Policy is authoritative even when a tool proposes an action. A tool cannot
-turn interactive mode into permission.
-
-### 3. Bind existing React behavior
-
-```tsx
-import {
-  RcipProvider,
-  useRcipCapability,
-  useRcipContext,
-} from '@binaried/rcip/react'
-
-function TodoFeature() {
-  useRcipContext({
-    activeScopeIds: ['todos'],
-    primaryScopeId: 'todos',
-  })
-
-  useRcipCapability(createTodo, {
-    execute: ({ title }) => saveTodo(title),
-    getAvailability: () => ({
-      available: userCanCreateTodo(),
-      reason: userCanCreateTodo() ? undefined : 'Todo creation is unavailable.',
-    }),
-  })
-
-  return <TodoScreen />
-}
-
-export function App() {
-  return (
-    <RcipProvider runtime={runtime}>
-      <TodoFeature />
-    </RcipProvider>
-  )
-}
-```
-
-Bindings mount and unmount with React. They reuse your existing services,
-navigation, state, and authorization checks.
-
-### 4. Give a tool the narrow client
-
-```ts
-import type { RcipClient } from '@binaried/rcip/core'
-
-export async function createTask(client: RcipClient, title: string) {
-  const available = client.listCapabilities({
-    context: 'current',
-    availableOnly: true,
-  })
-
-  if (!available.some((capability) => capability.id === 'todos.create')) {
-    return null
-  }
-
-  return client.invoke({
-    capabilityId: 'todos.create',
-    input: { title },
-  })
-}
-```
-
-Every invocation resolves to structured data: `succeeded`,
-`confirmation_required`, `failed`, or `denied`.
-
-## Packaged Assist
-
-Assist is an optional provider-neutral tool. It collapses to a stateful dot and
-opens into a responsive floating conversation panel. The host supplies the
-decision callback; RCIP supplies bounded orchestration, confirmation UI, and
-capability invocation.
-
-```tsx
-import { RcipAssist, type RcipAssistDecide } from '@binaried/rcip/assist'
-import '@binaried/rcip/assist/styles.css'
-
-const decide: RcipAssistDecide = async (request, { signal }) => {
-  const response = await fetch('/api/assist', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(request),
-    signal,
-  })
-  return response.json()
-}
-
-<RcipAssist
-  runtime={runtime}
-  decide={decide}
-  mode="interactive"
-  title="Product Assist"
-/>
-```
-
-Use `mode="read-only"` when Assist may invoke only read capabilities.
-Interactive mode still passes every proposed action through schemas,
-availability, host policy, and host-owned confirmation.
-
-### Dot interaction
-
-- click or tap once to start voice input;
-- click or tap again to stop and process it;
-- double-click to open chat;
-- long-press to open chat on touch devices;
-- press Enter to open chat or Space to toggle voice input from a keyboard.
-
-The default voice source is a one-second visual simulation. It requests no
-permission, captures no audio, produces no text, and invokes no capability.
-Set `inputPipeline={{ voice: false }}` when no transcription provider is
-configured. A single click or Space then reports that voice is unavailable
-without opening chat; double-click, long-press, and Enter still open chat.
-
-## Audio → transcript → refined request
-
-Assist input is an ordered, consumer-owned pipeline. It accepts text from the
-composer or audio/text from a voice adapter. A final text result automatically
-enters the same bounded Assist decision flow.
-
-```tsx
-import type {
-  RcipAssistInputPipeline,
-  RcipAssistInputProcessor,
-  RcipAssistVoiceAdapter,
-} from '@binaried/rcip/assist'
-
-const browserVoice: RcipAssistVoiceAdapter = {
-  async start({ signal }) {
-    await recorder.start({ signal })
-  },
-  async stop({ signal }) {
-    const audio = await recorder.stop({ signal })
-    return {
-      type: 'audio',
-      data: audio,
-      mimeType: audio.type || 'audio/webm',
-    }
-  },
-  cancel() {
-    recorder.cancel()
-  },
-}
-
-const transcribe: RcipAssistInputProcessor = {
-  id: 'transcribe',
-  async process(input, { signal }) {
-    if (input.type === 'text') return input
-    const text = await sendAudioToYourServer(input.data, { signal })
-    return { type: 'text', text }
-  },
-}
-
-const refine: RcipAssistInputProcessor = {
-  id: 'refine',
-  async process(input, { signal }) {
-    if (input.type === 'audio') return input
-    const text = await refineOnYourServer(input.text, { signal })
-    return { type: 'text', text }
-  },
-}
-
-const inputPipeline: RcipAssistInputPipeline = {
-  voice: browserVoice,
-  processors: [transcribe, refine],
-}
-
-<RcipAssist {...props} inputPipeline={inputPipeline} />
-```
-
-Processors run exactly in declaration order. Returning `null` intentionally
-consumes the input without starting a turn. Returning audio after the final
-processor fails safely because Assist requires text before calling `decide`.
-Cancellation uses one `AbortSignal` across capture and processing.
-
-Keep transcription/refinement credentials and provider calls on a trusted
-server. RCIP does not hide browser-bundled secrets.
-
-## Headless Assist
-
-Use `useRcipAssist` to build a command palette, narrator, embedded assistant,
-or completely custom UI. The controller exposes:
-
-- conversation state, decision status, confirmation, cancellation, and clear;
-- `send` and `submitInput` for pipeline-aware text/audio input;
-- `startVoiceInput`, `stopVoiceInput`, and `cancelInput`;
-- input status/error and the live application snapshot.
-
-The packaged UI and headless hook share the same orchestration contract.
-
-## Capability Explorer
-
-The Explorer is a separate read-only developer and support surface:
-
-```tsx
-import { RcipCapabilityExplorer } from '@binaried/rcip/explorer'
-import '@binaried/rcip/explorer/styles.css'
-
-<RcipCapabilityExplorer client={runtime.client} />
-```
-
-It displays registered, bound, available, and context-relevant capabilities.
-It never invokes application behavior.
-
-## Styling Assist
-
-The default UI is usable without a design system and responds automatically to
-dark color preference. Override CSS variables on `.rcip-assist` or a custom
-class:
-
-```css
-.my-product-assist {
-  --rcip-assist-accent: #0f766e;
-  --rcip-assist-accent-strong: #115e59;
-  --rcip-assist-accent-soft: #e7f8f5;
-  --rcip-assist-background: #ffffff;
-  --rcip-assist-text: #17201f;
-  --rcip-assist-z-index: 1500;
-}
-```
-
-Status, input, and open state are also available through
-`data-rcip-assist-status`, `data-rcip-assist-input-status`, and
-`data-rcip-assist-open`.
-
-## Safety boundary
-
-- Treat tool decisions and pipeline results as untrusted input.
-- Keep `runtime.host` inside trusted application code; tools receive only
-  `runtime.client`.
-- Use schemas for structural validation and host policy for authorization and
-  consent.
-- Never place credentials, private data, or dynamic authorization results in
-  capability metadata.
-- Do not automatically retry writes or destructive operations.
-- Resolve confirmation only in trusted host UI.
-
-RCIP validates contracts and coordinates control. It does not replace your
-application's authentication, authorization, transaction, or audit systems.
-
-## Compatibility and versioning
-
-- Protocol `1.0` describes the capability/runtime wire contract.
-- Package `2.x` is the capability-first SDK and is intentionally incompatible
-  with the older component/action prototype in package `1.x`.
-- Patch releases fix behavior without changing public contracts.
-- Minor releases add backward-compatible APIs.
-- Incompatible public contract changes require a new major after stable.
-
-Published npm versions remain immutable. Install the stable release from
-`latest`, or pin an exact version in applications that require deterministic
-dependency updates.
-
-## License
-
-Apache-2.0
-
-## Optional readiness checks (2.0.4)
-
-`createRcipRuntime()` also exposes `client.preflight({ requests, signal? })`. It
-assesses 1–16 independent proposed operations concurrently without executing their
-handlers or creating confirmation tickets. Results report readiness, required
-confirmation, or a blocking reason such as missing input, unavailable credentials,
-or host policy denial. Older client adapters can omit this optional method.
-
-Use it to review several proposals together; direct `invoke` still checks and
-executes in one call. A preflight result is advisory, never an authorization token,
-reservation, or transaction. Invocation rechecks current state. Host policies must
-be effect-free and safe to call concurrently. See the
-[tool author guide](https://binariedus.github.io/rcip/tool-author-guide.html) for
-state freshness, cancellation, and compatibility details.
+Despite the name **React Capability Interface Protocol**, `@binaried/rcip/core`
+is framework-neutral JavaScript/TypeScript. `@binaried/rcip/react` connects it to
+React 18/19 apps. Optional Assist and Explorer add a conversation UI and inspector.
+
+Declare the capability, bind existing behavior, and connect your consumer to the
+client. RCIP does not invent handlers or discover arbitrary sites automatically.
+[Start an integration](https://binariedus.github.io/rcip/quick-start.html) · [Core and consumer API](https://binariedus.github.io/rcip/tool-author-guide.html).
+
+[WebMCP](https://webmachinelearning.github.io/webmcp/) is a browser-tool draft with
+preview support. RCIP works through an application-owned client today, without
+requiring that browser API, and can serve in-app or non-browser consumers.
+No direct MCP/WebMCP adapter is included. [Where they fit](https://binariedus.github.io/rcip/ecosystem.html).
+
+Apache-2.0 · [Source](https://github.com/binariedus/rcip) · [API reference](https://binariedus.github.io/rcip/api.html)

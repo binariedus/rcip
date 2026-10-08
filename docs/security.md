@@ -35,6 +35,36 @@ and call `runtime.host.resolveConfirmation`. The packaged Assist panel is
 trusted host UI only when mounted by the application with its own runtime; a
 model or third-party callback never receives the host confirmation control.
 
+## Choose the surface the agent sees
+
+A human-facing page may show far more than a task needs. RCIP lets the application
+publish selected context and capability outputs instead of asking an agent to
+read the whole page. A visit-scheduling capability can return the saved visit ID
+and time without returning resident contact details.
+
+This is deliberate exposure, not automatic redaction. Schemas validate structure;
+they do not decide whether a valid field is appropriate to share. Keep capability
+catalogs, context, availability reasons, outputs, events and logs intentionally
+bounded. A consumer decides what reaches its model provider.
+
+In the [dispatch benchmark](./benchmark), selected resident/contact markers appeared
+in Browser Use model-bound text and were absent from RCIP responses. The records
+were synthetic, image-only exposure was not counted, and operational data was
+still shared. That is evidence for that integration’s data choices, not a
+blanket security guarantee.
+
+## Predictable execution, not an infallible agent
+
+A declared action has named arguments and bound behavior; it does not depend on
+an agent selecting the right visual element. Invalid requests and blocked actions
+return structured outcomes. Valid but unintended requests are still possible:
+server business rules, scoped permissions and meaningful confirmation protect
+consequential operations.
+
+Preflight reports readiness without running operation handlers or granting
+confirmation. It does not reserve resources or authorize a later write. Policies
+used during assessment must be effect-free; invocation and the backend recheck.
+
 ## Data and credentials
 
 Discovery snapshots contain contracts, context, binding state, and availability.

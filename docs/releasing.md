@@ -125,7 +125,7 @@ successful upload, investigate the published version before retrying anything.
 Do not republish an immutable version. Repeat the exact-version regression using
 the manual public-health workflow after resolving the failure.
 
-The current maintenance release is `2.0.4`, retaining protocol `1.0` and public
+The current maintenance release is `2.0.5`, retaining protocol `1.0` and public
 API compatibility. Use the next unused patch version if it is already published.
 Publish only after packed-consumer and composed browser checks pass.
 
